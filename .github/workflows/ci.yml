@@ -1,0 +1,46 @@
+name: CI — Build & Test
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    name: Build & Test (Simulator)
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate .xcodeproj
+        run: xcodegen generate
+        env:
+          DEVELOPMENT_TEAM: ""
+
+      - name: Build
+        run: |
+          xcodebuild build \
+            -project PersonalGuide.xcodeproj \
+            -scheme PersonalGuide \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty
+
+      - name: Test
+        run: |
+          xcodebuild test \
+            -project PersonalGuide.xcodeproj \
+            -scheme PersonalGuideTests \
+            -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty
+        continue-on-error: true

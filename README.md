@@ -12,7 +12,7 @@ This project uses **GitHub Actions** to build, test, and deploy to TestFlight. Y
 
 ### Your Workflow
 
-```
+```text
 1. Edit Swift code on Windows (Antigravity/VS Code)
          ↓
 2. git push to GitHub
@@ -63,6 +63,7 @@ git push -u origin main
 You'll need to do this once from any Mac (borrow one, use a friend's, or use a 1-hour MacinCloud session for ~$1):
 
 #### 4a. Distribution Certificate
+
 1. Open **Keychain Access** on the Mac
 2. **Keychain Access → Certificate Assistant → Request a Certificate from a CA**
 3. Enter your email, select "Saved to disk", click Continue
@@ -73,6 +74,7 @@ You'll need to do this once from any Mac (borrow one, use a friend's, or use a 1
 8. Set a password — remember it!
 
 #### 4b. Provisioning Profile
+
 1. Go to [developer.apple.com/account/resources/profiles](https://developer.apple.com/account/resources/profiles/add)
 2. Select **App Store Connect**
 3. Select your App ID (`com.personalguide.app`)
@@ -80,6 +82,7 @@ You'll need to do this once from any Mac (borrow one, use a friend's, or use a 1
 5. Download the .mobileprovision file
 
 #### 4c. App Store Connect API Key
+
 1. Go to [appstoreconnect.apple.com/access/integrations/api](https://appstoreconnect.apple.com/access/integrations/api)
 2. Click **+** to generate a new key
 3. Name: "GitHub Actions", Access: **App Manager**
@@ -93,7 +96,7 @@ Go to your GitHub repo → **Settings → Secrets and variables → Actions → 
 Add these secrets:
 
 | Secret Name | Value |
-|---|---|
+| --- | --- |
 | `DEVELOPMENT_TEAM` | Your 10-character Team ID (from developer.apple.com → Membership) |
 | `BUILD_CERTIFICATE_BASE64` | Your .p12 cert encoded: `base64 -i certificate.p12` |
 | `P12_PASSWORD` | The password you set for the .p12 |
@@ -126,7 +129,7 @@ GitHub Actions will:
 
 ## Project Structure
 
-```
+```text
 PersonalGuide/
 ├── .github/workflows/
 │   ├── build-and-deploy.yml    ← Push to main → TestFlight
@@ -146,7 +149,7 @@ PersonalGuide/
 ## Tech Stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | UI | SwiftUI (iOS 17+) |
 | Data | SwiftData |
 | AI (Phase 2) | Apple Vision + Gemini/OpenAI |
@@ -163,7 +166,7 @@ PersonalGuide/
 ## GitHub Actions Minutes
 
 | Plan | macOS Minutes/Month | Builds (~8 min each) |
-|---|---|---|
+| --- | --- | --- |
 | Free (public repo) | Unlimited | Unlimited |
 | Free (private repo) | 200 min (2000 ÷ 10x multiplier) | ~25 builds |
 | Team ($4/user/month) | 300 min | ~37 builds |

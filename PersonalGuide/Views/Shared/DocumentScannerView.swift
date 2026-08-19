@@ -11,14 +11,14 @@ struct DocumentScannerView: UIViewControllerRepresentable {
 
     typealias UIViewControllerType = VNDocumentCameraViewController
 
-    @MainActor private let onScanned: @MainActor ([UIImage]) -> Void
-    @MainActor private let onCancelled: @MainActor () -> Void
-    @MainActor private let onError: @MainActor (Error) -> Void
+    let onScanned: ([UIImage]) -> Void
+    let onCancelled: () -> Void
+    let onError: (Error) -> Void
 
     init(
-        onScanned: @escaping @MainActor ([UIImage]) -> Void,
-        onCancelled: @escaping @MainActor () -> Void,
-        onError: @escaping @MainActor (Error) -> Void = { _ in }
+        onScanned: @escaping ([UIImage]) -> Void,
+        onCancelled: @escaping () -> Void,
+        onError: @escaping (Error) -> Void = { _ in }
     ) {
         self.onScanned = onScanned
         self.onCancelled = onCancelled
@@ -39,29 +39,36 @@ struct DocumentScannerView: UIViewControllerRepresentable {
 
     // MARK: - Coordinator
 
-    @MainActor
-    final class Coordinator: NSObject, VNDocumentCameraViewControllerDelegate {
-        private let parent: DocumentScannerView
+    final class Coordinator: NSObject, VNDocumentCameraViewControllerDelegate, @unchecked Sendable {
+        let parent: DocumentScannerView
 
         init(parent: DocumentScannerView) {
             self.parent = parent
         }
 
-        func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
+        nonisolated func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
             var scannedImages: [UIImage] = []
             for pageIndex in 0..<scan.pageCount {
                 scannedImages.append(scan.imageOfPage(at: pageIndex))
             }
-            parent.onScanned(scannedImages)
+            let captured = scannedImages
+            Task { @MainActor in
+                self.parent.onScanned(captured)
+            }
         }
 
-        func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
-            parent.onCancelled()
+        nonisolated func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
+            Task { @MainActor in
+                self.parent.onCancelled()
+            }
         }
 
-        func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
-            parent.onError(error)
-            parent.onCancelled()
+        nonisolated func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
+            let capturedError = error
+            Task { @MainActor in
+                self.parent.onError(capturedError)
+                self.parent.onCancelled()
+            }
         }
     }
 }

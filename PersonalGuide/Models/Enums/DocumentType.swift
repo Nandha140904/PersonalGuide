@@ -7,7 +7,7 @@ import Foundation
 ///
 /// Used by the AI Classifier to categorize documents after upload.
 /// Confidence is tracked separately — this is the classified result.
-enum DocumentType: String, Codable, CaseIterable, Identifiable {
+public enum DocumentType: String, Codable, CaseIterable, Identifiable {
     case receipt           = "RECEIPT"
     case invoice           = "INVOICE"
     case bill              = "BILL"
@@ -22,7 +22,7 @@ enum DocumentType: String, Codable, CaseIterable, Identifiable {
     case agreement         = "AGREEMENT"
     case other             = "OTHER"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
     var displayName: String {
         switch self {

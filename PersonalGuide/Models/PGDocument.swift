@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-final class PGDocument {
+public final class PGDocument {
 
     var id: UUID
     var fileName: String
@@ -53,7 +53,7 @@ final class PGDocument {
 
     // MARK: - Init
 
-    init(
+    public init(
         fileName: String,
         mimeType: String,
         storagePath: String,

@@ -8,7 +8,7 @@ import Foundation
 /// Action types help the UI present contextual affordances —
 /// e.g., an `openURL` action shows a link button, a `call` action
 /// shows a phone button, an `upload` action shows a document picker.
-enum ActionType: String, Codable, CaseIterable, Identifiable {
+public enum ActionType: String, Codable, CaseIterable, Identifiable {
     case read      = "READ"
     case upload    = "UPLOAD"
     case fillForm  = "FILL_FORM"
@@ -22,7 +22,7 @@ enum ActionType: String, Codable, CaseIterable, Identifiable {
     case wait      = "WAIT"
     case custom    = "CUSTOM"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
     var displayName: String {
         switch self {

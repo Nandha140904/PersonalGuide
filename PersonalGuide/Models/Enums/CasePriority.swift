@@ -11,14 +11,14 @@ import Foundation
 /// Priority is computed deterministically by `PriorityEngine` using:
 /// deadline proximity, financial impact, consequences, user preference,
 /// case type, and confidence score.
-enum CasePriority: String, Codable, CaseIterable, Comparable, Identifiable {
+public enum CasePriority: String, Codable, CaseIterable, Comparable, Identifiable {
     case low      = "LOW"
     case normal   = "NORMAL"
     case high     = "HIGH"
     case urgent   = "URGENT"
     case critical = "CRITICAL"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
     /// Numeric weight for deterministic scoring.
     var weight: Int {
@@ -51,7 +51,7 @@ enum CasePriority: String, Codable, CaseIterable, Comparable, Identifiable {
         }
     }
 
-    static func < (lhs: CasePriority, rhs: CasePriority) -> Bool {
+    public static func < (lhs: CasePriority, rhs: CasePriority) -> Bool {
         lhs.weight < rhs.weight
     }
 }

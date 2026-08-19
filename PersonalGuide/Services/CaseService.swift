@@ -232,24 +232,58 @@ final class CaseService {
 // MARK: - Draft Models (for case creation flow)
 
 /// Lightweight struct for building an action before persisting.
-struct CaseActionDraft: Identifiable {
-    let id = UUID()
-    var title: String
-    var descriptionText: String = ""
-    var actionType: ActionType = .custom
-    var isRequired: Bool = true
-    var externalURL: String?
-    var source: String?
+public struct CaseActionDraft: Identifiable {
+    public let id = UUID()
+    public var title: String
+    public var descriptionText: String = ""
+    public var actionType: ActionType = .custom
+    public var isRequired: Bool = true
+    public var externalURL: String?
+    public var source: String?
+
+    public init(
+        title: String,
+        descriptionText: String = "",
+        actionType: ActionType = .custom,
+        isRequired: Bool = true,
+        externalURL: String? = nil,
+        source: String? = nil
+    ) {
+        self.title = title
+        self.descriptionText = descriptionText
+        self.actionType = actionType
+        self.isRequired = isRequired
+        self.externalURL = externalURL
+        self.source = source
+    }
 }
 
 /// Lightweight struct for building a requirement before persisting.
-struct CaseRequirementDraft: Identifiable {
-    let id = UUID()
-    var title: String
-    var descriptionText: String = ""
-    var requirementType: RequirementType = .document
-    var status: RequirementStatus = .missing
-    var isRequired: Bool = true
-    var confidence: Double = 1.0
-    var source: String?
+public struct CaseRequirementDraft: Identifiable {
+    public let id = UUID()
+    public var title: String
+    public var descriptionText: String = ""
+    public var requirementType: RequirementType = .document
+    public var status: RequirementStatus = .missing
+    public var isRequired: Bool = true
+    public var confidence: Double = 1.0
+    public var source: String?
+
+    public init(
+        title: String,
+        descriptionText: String = "",
+        requirementType: RequirementType = .document,
+        status: RequirementStatus = .missing,
+        isRequired: Bool = true,
+        confidence: Double = 1.0,
+        source: String? = nil
+    ) {
+        self.title = title
+        self.descriptionText = descriptionText
+        self.requirementType = requirementType
+        self.status = status
+        self.isRequired = isRequired
+        self.confidence = confidence
+        self.source = source
+    }
 }

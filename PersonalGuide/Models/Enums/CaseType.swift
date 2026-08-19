@@ -9,14 +9,14 @@ import Foundation
 ///
 /// MVP supports five core types. The Generic type serves as a catch-all
 /// for any admin task that doesn't fit the predefined categories.
-enum CaseType: String, Codable, CaseIterable, Identifiable {
+public enum CaseType: String, Codable, CaseIterable, Identifiable {
     case purchaseReturn       = "PURCHASE_RETURN"
     case subscriptionBill     = "SUBSCRIPTION_BILL"
     case documentRenewal      = "DOCUMENT_RENEWAL"
     case insuranceWarranty    = "INSURANCE_WARRANTY"
     case genericLifeAdmin     = "GENERIC_LIFE_ADMIN"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
     var displayName: String {
         switch self {

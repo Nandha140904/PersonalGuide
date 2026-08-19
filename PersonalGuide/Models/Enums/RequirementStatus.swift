@@ -4,7 +4,7 @@
 import Foundation
 
 /// Status tracking for a case requirement (document, info, payment, etc.).
-enum RequirementStatus: String, Codable, CaseIterable, Identifiable {
+public enum RequirementStatus: String, Codable, CaseIterable, Identifiable {
     case unknown     = "UNKNOWN"
     case missing     = "MISSING"
     case requested   = "REQUESTED"
@@ -13,7 +13,7 @@ enum RequirementStatus: String, Codable, CaseIterable, Identifiable {
     case rejected    = "REJECTED"
     case notRequired = "NOT_REQUIRED"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
     var displayName: String {
         switch self {
@@ -63,7 +63,7 @@ enum RequirementStatus: String, Codable, CaseIterable, Identifiable {
 // MARK: - RequirementType
 
 /// The kind of thing required to proceed with a case.
-enum RequirementType: String, Codable, CaseIterable, Identifiable {
+public enum RequirementType: String, Codable, CaseIterable, Identifiable {
     case document           = "DOCUMENT"
     case personalInformation = "PERSONAL_INFORMATION"
     case payment            = "PAYMENT"
@@ -72,7 +72,7 @@ enum RequirementType: String, Codable, CaseIterable, Identifiable {
     case approval           = "APPROVAL"
     case confirmation       = "CONFIRMATION"
 
-    var id: String { rawValue }
+    public var id: String { rawValue }
 
     var displayName: String {
         switch self {

@@ -11,12 +11,13 @@ import SwiftData
 struct YouView: View {
 
     @Environment(AIService.self) private var aiService
+    @Environment(NotificationManager.self) private var notificationManager
     @Query private var allCases: [PGCase]
     @Query private var allDocuments: [PGDocument]
+    @Query private var allAssets: [Asset]
 
     @State private var showExport = false
     @State private var showDeleteConfirmation = false
-    @State private var showAISettings = false
 
     var body: some View {
         NavigationStack {
@@ -46,6 +47,7 @@ struct YouView: View {
                     StatRow(icon: "folder.fill", label: "Total cases", value: "\(allCases.count)")
                     StatRow(icon: "checkmark.seal.fill", label: "Completed", value: "\(completedCount)")
                     StatRow(icon: "doc.fill", label: "Documents", value: "\(allDocuments.count)")
+                    StatRow(icon: "cube.box.fill", label: "Assets", value: "\(allAssets.count)")
                 }
 
                 // MARK: - AI & Intelligence
@@ -91,7 +93,13 @@ struct YouView: View {
                     NavigationLink {
                         NotificationSettingsView()
                     } label: {
-                        Label("Notification preferences", systemImage: "bell")
+                        HStack {
+                            Label("Notification preferences", systemImage: "bell")
+                            Spacer()
+                            Text(notificationManager.isAuthorized ? "Enabled" : "Disabled")
+                                .font(.pgCaption)
+                                .foregroundStyle(notificationManager.isAuthorized ? .pgPositive : .pgTextSecondary)
+                        }
                     }
                 }
 
@@ -220,14 +228,34 @@ private struct StatRow: View {
     }
 }
 
-// MARK: - Notification Settings (placeholder)
+// MARK: - Notification Settings
 
 struct NotificationSettingsView: View {
+    @Environment(NotificationManager.self) private var notificationManager
+
     @State private var deadlineReminders = true
     @State private var actionReminders = true
 
     var body: some View {
         List {
+            Section("Status") {
+                HStack {
+                    Text("Permission")
+                    Spacer()
+                    if notificationManager.isAuthorized {
+                        Label("Authorized", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.pgPositive)
+                    } else {
+                        Button("Enable in Settings") {
+                            Task {
+                                _ = await notificationManager.requestAuthorization()
+                            }
+                        }
+                        .foregroundStyle(.pgPrimary)
+                    }
+                }
+            }
+
             Section("Reminders") {
                 Toggle("Deadline reminders", isOn: $deadlineReminders)
                     .tint(.pgPrimary)
@@ -244,7 +272,7 @@ struct NotificationSettingsView: View {
     }
 }
 
-// MARK: - Export Data (placeholder)
+// MARK: - Export Data
 
 struct ExportDataView: View {
     @Environment(\.dismiss) private var dismiss
@@ -276,4 +304,5 @@ struct ExportDataView: View {
     YouView()
         .modelContainer(for: PGCase.self, inMemory: true)
         .environment(AIService())
+        .environment(NotificationManager.shared)
 }

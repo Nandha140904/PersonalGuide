@@ -2,7 +2,7 @@
 // PersonalGuide
 //
 // @main entry point. Configures SwiftData ModelContainer with all models,
-// injects shared services (CaseService, DocumentService, AIService) into the environment.
+// injects shared services into the environment.
 
 import SwiftUI
 import SwiftData
@@ -15,6 +15,8 @@ struct PersonalGuideApp: App {
     @State private var caseService = CaseService()
     @State private var documentService = DocumentService()
     @State private var aiService = AIService()
+    @State private var searchService = SearchService()
+    @State private var notificationManager = NotificationManager.shared
 
     // MARK: - SwiftData Container
 
@@ -51,6 +53,8 @@ struct PersonalGuideApp: App {
                 .environment(caseService)
                 .environment(documentService)
                 .environment(aiService)
+                .environment(searchService)
+                .environment(notificationManager)
         }
         .modelContainer(sharedModelContainer)
     }

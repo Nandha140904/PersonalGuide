@@ -2,7 +2,7 @@
 // PersonalGuide
 //
 // Assets connect multiple pieces of life administration.
-// A car has insurance, registration, PUC, service history, warranty.
+// A car has insurance, registration, service history, warranty.
 // A phone has purchase receipt, warranty, repair history.
 // This relationship graph is a long-term product differentiator.
 
@@ -17,7 +17,13 @@ final class Asset {
     var descriptionText: String
     var assetTypeRaw: String
 
-    /// Arbitrary metadata (JSON-encoded) — e.g., make, model, registration number.
+    /// Purchase date of the asset.
+    var purchaseDate: Date?
+
+    /// Warranty expiration date if applicable.
+    var warrantyEndDate: Date?
+
+    /// Arbitrary metadata (JSON-encoded) — e.g., make, model, serial number.
     var metadataJSON: String?
 
     var createdAt: Date
@@ -33,12 +39,16 @@ final class Asset {
     init(
         name: String,
         assetType: AssetType = .other,
-        descriptionText: String = ""
+        descriptionText: String = "",
+        purchaseDate: Date? = nil,
+        warrantyEndDate: Date? = nil
     ) {
         self.id = UUID()
         self.name = name
         self.assetTypeRaw = assetType.rawValue
         self.descriptionText = descriptionText
+        self.purchaseDate = purchaseDate
+        self.warrantyEndDate = warrantyEndDate
         self.createdAt = .now
         self.updatedAt = .now
     }
@@ -67,6 +77,39 @@ final class Asset {
             else { return }
             metadataJSON = json
         }
+    }
+
+    var manufacturer: String? {
+        get { metadata["manufacturer"] }
+        set {
+            var meta = metadata
+            meta["manufacturer"] = newValue
+            metadata = meta
+        }
+    }
+
+    var modelNumber: String? {
+        get { metadata["modelNumber"] }
+        set {
+            var meta = metadata
+            meta["modelNumber"] = newValue
+            metadata = meta
+        }
+    }
+
+    var serialNumber: String? {
+        get { metadata["serialNumber"] }
+        set {
+            var meta = metadata
+            meta["serialNumber"] = newValue
+            metadata = meta
+        }
+    }
+
+    /// Whether the asset is currently within its active warranty period.
+    var isUnderWarranty: Bool {
+        guard let warrantyEndDate else { return false }
+        return warrantyEndDate > .now
     }
 
     /// Number of active cases linked to this asset.

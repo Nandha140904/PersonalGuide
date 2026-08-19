@@ -208,3 +208,91 @@ final class OnDeviceAITests: XCTestCase {
         XCTAssertNotNil(plan.suggestedDeadline)
     }
 }
+
+@MainActor
+final class SearchServiceTests: XCTestCase {
+
+    var searchService: SearchService!
+
+    override func setUp() {
+        super.setUp()
+        searchService = SearchService()
+    }
+
+    func testSearchMatchesCaseTitleAndCounterparty() {
+        let case1 = PGCase(title: "Renew Geico Insurance Policy", caseType: .insuranceWarranty)
+        case1.counterparty = "Geico"
+        let case2 = PGCase(title: "Return Amazon Order", caseType: .purchaseReturn)
+
+        let results = searchService.search(
+            query: "Geico",
+            allCases: [case1, case2],
+            allDocuments: [],
+            allAssets: []
+        )
+
+        XCTAssertEqual(results.cases.count, 1)
+        XCTAssertEqual(results.cases.first?.title, "Renew Geico Insurance Policy")
+    }
+
+    func testSearchMatchesDocumentOCRText() {
+        let doc1 = PGDocument(fileName: "Policy.pdf", fileType: .pdf, storagePath: "docs/policy.pdf")
+        doc1.extractedText = "Policy Number POL-987654. Effective date January 2026."
+
+        let results = searchService.search(
+            query: "POL-987654",
+            allCases: [],
+            allDocuments: [doc1],
+            allAssets: []
+        )
+
+        XCTAssertEqual(results.documents.count, 1)
+        XCTAssertEqual(results.documents.first?.fileName, "Policy.pdf")
+    }
+
+    func testSearchMatchesAssetSerialNumber() {
+        let asset1 = Asset(name: "MacBook Pro", assetType: .laptop)
+        asset1.serialNumber = "C02XYZ1234"
+
+        let results = searchService.search(
+            query: "C02XYZ",
+            allCases: [],
+            allDocuments: [],
+            allAssets: [asset1]
+        )
+
+        XCTAssertEqual(results.assets.count, 1)
+        XCTAssertEqual(results.assets.first?.name, "MacBook Pro")
+    }
+}
+
+final class AssetTests: XCTestCase {
+
+    func testAssetWarrantyStatus() {
+        let asset = Asset(
+            name: "iPhone 14 Pro",
+            assetType: .phone,
+            warrantyEndDate: Calendar.current.date(byAdding: .month, value: 6, to: .now)
+        )
+        XCTAssertTrue(asset.isUnderWarranty)
+
+        let oldAsset = Asset(
+            name: "Old iPad",
+            assetType: .tablet,
+            warrantyEndDate: Calendar.current.date(byAdding: .year, value: -2, to: .now)
+        )
+        XCTAssertFalse(oldAsset.isUnderWarranty)
+    }
+
+    func testAssetMetadataJSON() {
+        let asset = Asset(name: "Tesla Model Y", assetType: .car)
+        asset.manufacturer = "Tesla"
+        asset.modelNumber = "Model Y Long Range"
+        asset.serialNumber = "5YJSA1E28HF123456"
+
+        XCTAssertEqual(asset.manufacturer, "Tesla")
+        XCTAssertEqual(asset.modelNumber, "Model Y Long Range")
+        XCTAssertEqual(asset.serialNumber, "5YJSA1E28HF123456")
+        XCTAssertNotNil(asset.metadataJSON)
+    }
+}

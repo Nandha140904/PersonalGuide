@@ -11,14 +11,14 @@ struct DocumentScannerView: UIViewControllerRepresentable {
 
     typealias UIViewControllerType = VNDocumentCameraViewController
 
-    private let onScanned: ([UIImage]) -> Void
-    private let onCancelled: () -> Void
-    private let onError: (Error) -> Void
+    @MainActor private let onScanned: @MainActor ([UIImage]) -> Void
+    @MainActor private let onCancelled: @MainActor () -> Void
+    @MainActor private let onError: @MainActor (Error) -> Void
 
     init(
-        onScanned: @escaping ([UIImage]) -> Void,
-        onCancelled: @escaping () -> Void,
-        onError: @escaping (Error) -> Void = { _ in }
+        onScanned: @escaping @MainActor ([UIImage]) -> Void,
+        onCancelled: @escaping @MainActor () -> Void,
+        onError: @escaping @MainActor (Error) -> Void = { _ in }
     ) {
         self.onScanned = onScanned
         self.onCancelled = onCancelled
@@ -39,6 +39,7 @@ struct DocumentScannerView: UIViewControllerRepresentable {
 
     // MARK: - Coordinator
 
+    @MainActor
     final class Coordinator: NSObject, VNDocumentCameraViewControllerDelegate {
         private let parent: DocumentScannerView
 

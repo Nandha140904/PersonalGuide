@@ -220,7 +220,7 @@ struct CreateCaseView: View {
                 VStack(alignment: .leading, spacing: PGSpacing.sm) {
                     PGSectionHeader("Scanned pages (\(scannedDocuments.count))")
 
-                    ForEach(scannedDocuments) { doc in
+                    ForEach(scannedDocuments, id: \.id) { doc in
                         PGCard {
                             HStack(spacing: PGSpacing.sm) {
                                 Image(systemName: "doc.text.fill")
@@ -229,7 +229,7 @@ struct CreateCaseView: View {
                                     Text(doc.fileName)
                                         .font(.pgBody)
                                         .foregroundStyle(.pgTextPrimary)
-                                    Text("\(doc.ocrText.count) characters recognized")
+                                    Text("\(doc.extractedText?.count ?? 0) characters recognized")
                                         .font(.pgCaption)
                                         .foregroundStyle(.pgTextSecondary)
                                 }
@@ -245,7 +245,7 @@ struct CreateCaseView: View {
                     }
 
                     PGButton("Generate Case Plan", icon: "sparkles") {
-                        let combinedOCR = scannedDocuments.map { $0.ocrText }.joined(separator: "\n\n")
+                        let combinedOCR = scannedDocuments.compactMap { $0.extractedText }.joined(separator: "\n\n")
                         planWithAI(text: combinedOCR, attachedDocs: scannedDocuments)
                     }
                     .padding(.top, PGSpacing.md)
@@ -358,8 +358,9 @@ struct CreateCaseView: View {
 
     // MARK: - Actions & AI Processing
 
+    @MainActor
     private func processScannedImages(_ images: [UIImage]) {
-        Task {
+        Task { @MainActor in
             for (idx, image) in images.enumerated() {
                 if let doc = try? await documentService.ingestDocument(
                     image: image,
@@ -373,19 +374,19 @@ struct CreateCaseView: View {
         }
     }
 
+    @MainActor
     private func planWithAI(text: String, attachedDocs: [PGDocument] = []) {
         isProcessingAI = true
-        Task {
+        Task { @MainActor in
             let plannedDraft = await aiService.planCase(from: text)
-            await MainActor.run {
-                draft = plannedDraft
-                draft.scannedDocuments = attachedDocs
-                isProcessingAI = false
-                showPreview = true
-            }
+            draft = plannedDraft
+            draft.scannedDocuments = attachedDocs
+            isProcessingAI = false
+            showPreview = true
         }
     }
 
+    @MainActor
     private func createCase(from draft: CaseDraft) {
         let pgCase = caseService.createCase(
             title: draft.title,

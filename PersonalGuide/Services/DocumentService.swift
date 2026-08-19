@@ -22,12 +22,12 @@ final class DocumentService: @unchecked Sendable {
     // MARK: - Storage Paths
 
     private var documentsDirectory: URL {
-        let paths = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+        let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0].appendingPathComponent("PersonalGuide/Documents", isDirectory: true)
     }
 
     private var thumbnailsDirectory: URL {
-        let paths = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+        let paths = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0].appendingPathComponent("PersonalGuide/Thumbnails", isDirectory: true)
     }
 
@@ -39,6 +39,7 @@ final class DocumentService: @unchecked Sendable {
     // MARK: - Document Ingestion & Storage
 
     /// Save an image document, compute its hash, generate a thumbnail, and run OCR.
+    @MainActor
     func ingestDocument(
         image: UIImage,
         fileName: String,
@@ -50,9 +51,8 @@ final class DocumentService: @unchecked Sendable {
         }
 
         let documentId = UUID()
-        let fileExtension = "jpg"
-        let storageFileName = "\(documentId.uuidString).\(fileExtension)"
-        let fileURL = documentsDirectory.appendingPathComponent(storageFileName)
+        let relativeStoragePath = "PersonalGuide/Documents/\(documentId.uuidString).jpg"
+        let fileURL = documentsDirectory.appendingPathComponent("\(documentId.uuidString).jpg")
 
         // 1. Write file to local disk
         try imageData.write(to: fileURL, options: .atomic)
@@ -62,8 +62,7 @@ final class DocumentService: @unchecked Sendable {
 
         // 3. Generate and save thumbnail
         let thumbnailData = generateThumbnail(from: image)
-        let thumbnailFileName = "\(documentId.uuidString)_thumb.jpg"
-        let thumbURL = thumbnailsDirectory.appendingPathComponent(thumbnailFileName)
+        let thumbURL = thumbnailsDirectory.appendingPathComponent("\(documentId.uuidString)_thumb.jpg")
         if let thumbnailData {
             try? thumbnailData.write(to: thumbURL, options: .atomic)
         }
@@ -75,15 +74,14 @@ final class DocumentService: @unchecked Sendable {
         // 5. Create PGDocument entity
         let document = PGDocument(
             fileName: fileName.isEmpty ? "Scanned Document" : fileName,
-            fileType: fileExtension,
-            fileSize: Int64(imageData.count),
-            localPath: fileURL.path,
+            mimeType: "image/jpeg",
+            storagePath: relativeStoragePath,
             documentType: documentType,
-            ocrText: ocrText
+            classificationConfidence: ocrResult?.confidence ?? 0.0
         )
         document.id = documentId
-        document.checksum = checksum
-        document.thumbnailData = thumbnailData
+        document.contentHash = checksum
+        document.extractedText = ocrText
 
         context.insert(document)
         try? context.save()
@@ -114,14 +112,15 @@ final class DocumentService: @unchecked Sendable {
 
     /// Load document image data from local sandbox.
     func loadDocumentData(for document: PGDocument) -> Data? {
-        guard let localPath = document.localPath else { return nil }
-        return try? Data(contentsOf: URL(fileURLWithPath: localPath))
+        guard let url = document.fileURL else { return nil }
+        return try? Data(contentsOf: url)
     }
 
     /// Delete a document record and its corresponding files on disk.
+    @MainActor
     func deleteDocument(_ document: PGDocument, in context: ModelContext) {
-        if let localPath = document.localPath {
-            try? fileManager.removeItem(atPath: localPath)
+        if let url = document.fileURL {
+            try? fileManager.removeItem(at: url)
         }
         let thumbURL = thumbnailsDirectory.appendingPathComponent("\(document.id.uuidString)_thumb.jpg")
         try? fileManager.removeItem(at: thumbURL)

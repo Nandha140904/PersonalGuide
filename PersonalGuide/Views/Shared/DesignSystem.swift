@@ -50,6 +50,10 @@ extension Color {
         }
     }
 
+    static func caseTypeColor(for type: CaseType) -> Color {
+        caseTypeColor(type)
+    }
+
     // Priority badge colors
     static func priorityColor(_ priority: CasePriority) -> Color {
         switch priority {
@@ -62,6 +66,10 @@ extension Color {
         case .low:
             return .pgTextSecondary
         }
+    }
+
+    static func priorityColor(for priority: CasePriority) -> Color {
+        priorityColor(priority)
     }
 
     // Status badge colors
@@ -84,6 +92,10 @@ extension Color {
         case .cancelled, .archived:
             return .pgTextSecondary
         }
+    }
+
+    static func statusColor(for status: CaseStatus) -> Color {
+        statusColor(status)
     }
 }
 
@@ -204,4 +216,19 @@ extension Animation {
 
     /// Quick fade/color transition.
     static let pgQuick = Animation.easeOut(duration: 0.2)
+}
+
+// MARK: - Constants
+
+enum PGConstants {
+    static let minTapTarget: CGFloat = 44
+
+    static var timeGreeting: String {
+        let hour = Calendar.current.component(.hour, from: .now)
+        switch hour {
+        case 5..<12:  return "Good morning"
+        case 12..<17: return "Good afternoon"
+        default:      return "Good evening"
+        }
+    }
 }

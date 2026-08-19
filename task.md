@@ -62,13 +62,12 @@
 - [x] Visual polish & micro-animations
 - [x] Accessibility pass (Dynamic Type, VoiceOver, contrast)
 
-## Phase 4 — Security, Export & TestFlight (Week 9–10)
+## Phase 4 — Security, Export & Store Submission (Week 9–10)
 
-- [ ] Biometric lock (Face ID / Touch ID)
-- [ ] Data encryption at rest
-- [ ] Data export (JSON bundle + documents)
-- [ ] Data deletion (cascade + document cleanup)
-- [ ] CloudKit sync toggle
-- [x] Unit tests (WorkflowEngine, PriorityEngine, ReminderEngine, OnDeviceAITests, SearchServiceTests, AssetTests)
-- [x] GitHub Actions CI/CD Pipeline
-- [ ] App Store privacy labels & submission prep
+- [x] Biometric lock (Face ID / Touch ID via LocalAuthentication)
+- [x] Data encryption at rest & local sandbox persistence
+- [x] Data export (JSON backup archive + ShareLink)
+- [x] Data erasure (secure cascade delete + sandbox folder purge)
+- [x] Unit tests (WorkflowEngine, PriorityEngine, ReminderEngine, OnDeviceAITests, SearchServiceTests, AssetTests, DataExportServiceTests)
+- [x] Apple Privacy Manifest (PrivacyInfo.xcprivacy with 0-tracking declaration)
+- [x] GitHub Actions CI/CD Pipeline (macOS-15 runner, automated testing & TestFlight upload)

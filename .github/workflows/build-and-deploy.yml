@@ -35,23 +35,34 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ""
 
+      # ── Find available iOS Simulator ──────────────────
+      - name: Find available iOS Simulator
+        id: find_sim
+        run: |
+          SIM_NAME=$(xcrun simctl list devices available | grep -E "iPhone (15|16)" | head -1 | sed -E 's/^[[:space:]]+//; s/[[:space:]]+\(.*$//')
+          if [ -z "$SIM_NAME" ]; then
+            SIM_NAME="iPhone 15"
+          fi
+          echo "Using simulator: $SIM_NAME"
+          echo "sim_name=$SIM_NAME" >> "$GITHUB_OUTPUT"
+
       # ── Build for Testing ─────────────────────────────
       - name: Build for testing (Simulator)
         run: |
-          xcodebuild build-for-testing \
+          xcodebuild build \
             -project PersonalGuide.xcodeproj \
             -scheme $SCHEME \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+            -destination "platform=iOS Simulator,name=${{ steps.find_sim.outputs.sim_name }}" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO
 
       # ── Run Unit Tests ────────────────────────────────
       - name: Run unit tests
         run: |
-          xcodebuild test-without-building \
+          xcodebuild test \
             -project PersonalGuide.xcodeproj \
             -scheme $SCHEME \
-            -destination 'platform=iOS Simulator,name=iPhone 16 Pro' \
+            -destination "platform=iOS Simulator,name=${{ steps.find_sim.outputs.sim_name }}" \
             -configuration Debug \
             CODE_SIGNING_ALLOWED=NO
 

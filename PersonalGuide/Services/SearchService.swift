@@ -15,7 +15,7 @@ final class SearchService {
 
     // MARK: - Search Result Models
 
-    enum SearchResultItem: Identifiable, Sendable {
+    enum SearchResultItem: Identifiable {
         case caseItem(PGCase)
         case documentItem(PGDocument)
         case assetItem(Asset)

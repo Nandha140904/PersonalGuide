@@ -1,10 +1,32 @@
 // MARK: - AIModels.swift
 // PersonalGuide
 //
-// Structured models and confidence wrappers for all AI-derived analysis.
+// Structured models, errors, and confidence wrappers for all AI-derived analysis.
 // Adheres strictly to the spec rule: Every extracted field has an explicit confidence rating.
 
 import Foundation
+
+// MARK: - AI Error
+
+enum AIError: LocalizedError {
+    case missingAPIKey(provider: String)
+    case networkError(String)
+    case apiError(String)
+    case parsingFailed
+
+    var errorDescription: String? {
+        switch self {
+        case .missingAPIKey(let provider):
+            return "No API key configured for \(provider)."
+        case .networkError(let message):
+            return "Network connection failed: \(message)"
+        case .apiError(let message):
+            return "AI service error: \(message)"
+        case .parsingFailed:
+            return "Failed to parse structured response from AI."
+        }
+    }
+}
 
 // MARK: - Confidence Wrapper
 

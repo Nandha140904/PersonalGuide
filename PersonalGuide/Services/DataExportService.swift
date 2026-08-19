@@ -99,7 +99,7 @@ final class DataExportService {
                         id: r.id,
                         title: r.title,
                         requirementType: r.requirementTypeRaw,
-                        status: r.statusRaw,
+                        status: r.requirementStatusRaw,
                         isRequired: r.isRequired
                     )
                 }

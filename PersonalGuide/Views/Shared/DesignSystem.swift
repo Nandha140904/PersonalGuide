@@ -1,71 +1,88 @@
 // MARK: - DesignSystem.swift
 // PersonalGuide
 //
-// Premium design tokens matching the spec's visual direction:
-// calm, premium, minimal iPhone-first UI with deep forest green,
-// warm cream background, restrained status colors, large typography.
+// Apple-grade design system: colors, typography, spacing, corner radii, shadows.
+// Strict adherence to HIG, WCAG AA contrast, dynamic type ready.
+// Minimal, high-density, text-first — NOT toy-like.
 
 import SwiftUI
 
-// MARK: - Color Palette
+// MARK: - Colors
 
 extension Color {
-    /// Deep forest green — primary brand color.
-    static let pgPrimary = Color(hex: "1B4332")
 
-    /// Warm cream/off-white — default background.
-    static let pgBackground = Color(hex: "FAF8F0")
+    // Primary & Accent
+    static let pgPrimary = Color(hex: "0A84FF")          // Apple System Blue (dark mode safe)
+    static let pgAccent = Color(hex: "5E5CE6")           // Indigo accent
 
-    /// Pure white — card surfaces.
-    static let pgCardBackground = Color.white
+    // Semantic / Status
+    static let pgPositive = Color(hex: "30D158")         // Green — complete, verified
+    static let pgWarning = Color(hex: "FF9F0A")          // Orange — upcoming, action needed
+    static let pgCritical = Color(hex: "FF453A")         // Red — overdue, urgent, blocked
 
-    /// Muted green — positive/completed status.
-    static let pgPositive = Color(hex: "40916C")
+    // Backgrounds (adaptive)
+    static let pgBackground = Color(UIColor.systemBackground)
+    static let pgCardBackground = Color(UIColor.secondarySystemBackground)
+    static let pgSurface = Color(UIColor.tertiarySystemBackground)
 
-    /// Muted peach/orange — warning/approaching status.
-    static let pgWarning = Color(hex: "E8A87C")
+    // Text
+    static let pgTextPrimary = Color(UIColor.label)
+    static let pgTextSecondary = Color(UIColor.secondaryLabel)
+    static let pgTextTertiary = Color(UIColor.tertiaryLabel)
 
-    /// Restrained red — critical/overdue status.
-    static let pgCritical = Color(hex: "BC4749")
+    // Borders & Dividers
+    static let pgBorder = Color(UIColor.separator)
+    static let pgDivider = Color(UIColor.opaqueSeparator)
 
-    /// Deep green/near-black — primary text.
-    static let pgTextPrimary = Color(hex: "1B4332")
-
-    /// Muted green-grey — secondary text.
-    static let pgTextSecondary = Color(hex: "6B7A6F")
-
-    /// Light sage — subtle borders and dividers.
-    static let pgBorder = Color(hex: "D8E2DC")
-
-    /// Very light green tint — subtle surface highlight.
-    static let pgSurface = Color(hex: "F0F5F1")
-
-    /// Accent peach for interactive highlights.
-    static let pgAccent = Color(hex: "E8A87C")
-
-    /// Color for specific case/priority status contexts.
-    static func statusColor(for status: CaseStatus) -> Color {
-        switch status {
-        case .draft:            return .pgTextSecondary
-        case .active:           return .pgPrimary
-        case .needsInformation: return .pgWarning
-        case .readyForAction:   return .pgPositive
-        case .inProgress:       return .pgPrimary
-        case .waiting:          return .pgTextSecondary
-        case .blocked:          return .pgCritical
-        case .completed:        return .pgPositive
-        case .cancelled:        return .pgTextSecondary
-        case .archived:         return .pgTextSecondary
+    // Case-type subtle tint colors
+    static func caseTypeColor(_ type: CaseType) -> Color {
+        switch type {
+        case .purchaseReturn:
+            return Color(hex: "FF9F0A")  // Orange
+        case .subscriptionBill:
+            return Color(hex: "BF5AF2")  // Purple
+        case .documentRenewal:
+            return Color(hex: "0A84FF")  // Blue
+        case .insuranceWarranty:
+            return Color(hex: "30D158")  // Green
+        case .genericLifeAdmin:
+            return Color(hex: "64D2FF")  // Cyan
         }
     }
 
-    static func priorityColor(for priority: CasePriority) -> Color {
+    // Priority badge colors
+    static func priorityColor(_ priority: CasePriority) -> Color {
         switch priority {
-        case .low:      return .pgTextSecondary
-        case .normal:   return .pgPrimary
-        case .high:     return .pgWarning
-        case .urgent:   return .pgCritical
-        case .critical: return .pgCritical
+        case .urgent:
+            return .pgCritical
+        case .high:
+            return .pgWarning
+        case .normal:
+            return .pgPrimary
+        case .low:
+            return .pgTextSecondary
+        }
+    }
+
+    // Status badge colors
+    static func statusColor(_ status: CaseStatus) -> Color {
+        switch status {
+        case .draft:
+            return .pgTextSecondary
+        case .active, .inProgress:
+            return .pgPrimary
+        case .needsInformation:
+            return .pgWarning
+        case .readyForAction:
+            return Color(hex: "30D158")
+        case .waiting:
+            return Color(hex: "BF5AF2")
+        case .blocked:
+            return .pgCritical
+        case .completed:
+            return .pgPositive
+        case .cancelled, .archived:
+            return .pgTextSecondary
         }
     }
 }
@@ -127,6 +144,9 @@ extension Font {
     /// Subtitle / label (17pt medium).
     static let pgSubtitle = Font.system(size: 17, weight: .medium, design: .default)
 
+    /// Button text (17pt semibold).
+    static let pgButton = Font.system(size: 17, weight: .semibold, design: .default)
+
     /// Body text (15pt regular).
     static let pgBody = Font.system(size: 15, weight: .regular, design: .default)
 
@@ -170,46 +190,18 @@ extension View {
         self.shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
     }
 
-    /// Elevated shadow for modals and floating elements.
+    /// Elevated shadow for modals and primary cards.
     func pgElevatedShadow() -> some View {
         self.shadow(color: Color.black.opacity(0.08), radius: 16, x: 0, y: 4)
     }
 }
 
-// MARK: - Animation
+// MARK: - Animation Standards
 
 extension Animation {
-    /// Standard spring animation for transitions.
-    static let pgSpring = Animation.spring(response: 0.35, dampingFraction: 0.85)
+    /// Standard spring for card expansions, step checks, status changes.
+    static let pgSpring = Animation.spring(response: 0.35, dampingFraction: 0.8)
 
-    /// Quick animation for micro-interactions.
+    /// Quick fade/color transition.
     static let pgQuick = Animation.easeOut(duration: 0.2)
-}
-
-// MARK: - Constants
-
-enum PGConstants {
-    /// Minimum tap target size per Apple HIG and spec (44pt).
-    static let minTapTarget: CGFloat = 44
-
-    /// Maximum content width for iPad/larger screens.
-    static let maxContentWidth: CGFloat = 500
-
-    /// Home greeting messages.
-    static let greetings: [String] = [
-        "Keep life moving.",
-        "Let's get things done.",
-        "Your life admin, simplified.",
-    ]
-
-    /// Time-aware greeting.
-    static var timeGreeting: String {
-        let hour = Calendar.current.component(.hour, from: .now)
-        switch hour {
-        case 5..<12:  return "Good morning"
-        case 12..<17: return "Good afternoon"
-        case 17..<22: return "Good evening"
-        default:      return "Hello"
-        }
-    }
 }

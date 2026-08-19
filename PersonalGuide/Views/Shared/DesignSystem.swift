@@ -57,6 +57,8 @@ extension Color {
     // Priority badge colors
     static func priorityColor(_ priority: CasePriority) -> Color {
         switch priority {
+        case .critical:
+            return .pgCritical
         case .urgent:
             return .pgCritical
         case .high:

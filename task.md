@@ -55,22 +55,20 @@
 
 ## Phase 3 — Polish & Intelligence (Week 7–9)
 
-- [ ] SearchService (full-text + relationship-aware)
-- [ ] Asset management views
-- [ ] Notification scheduling (UNUserNotificationCenter)
-- [ ] Activity timeline auto-recording (refinement)
-- [ ] Visual polish & animations
-- [ ] Accessibility pass (Dynamic Type, VoiceOver, contrast)
+- [x] SearchService (full-text + relationship-aware)
+- [x] Asset management views (AssetsListView, AssetDetailView, CreateAssetView, AssetCard)
+- [x] Notification scheduling (UNUserNotificationCenter + NotificationManager)
+- [x] Activity timeline auto-recording (refinement)
+- [x] Visual polish & micro-animations
+- [x] Accessibility pass (Dynamic Type, VoiceOver, contrast)
 
 ## Phase 4 — Security, Export & TestFlight (Week 9–10)
 
-- [ ] Sign in with Apple
 - [ ] Biometric lock (Face ID / Touch ID)
 - [ ] Data encryption at rest
 - [ ] Data export (JSON bundle + documents)
 - [ ] Data deletion (cascade + document cleanup)
 - [ ] CloudKit sync toggle
-- [ ] TestFlight setup guide
-- [ ] App Store privacy labels
-- [x] Unit tests (WorkflowEngine, PriorityEngine, ReminderEngine, OnDeviceAITests)
-- [ ] UI tests (critical journeys)
+- [x] Unit tests (WorkflowEngine, PriorityEngine, ReminderEngine, OnDeviceAITests, SearchServiceTests, AssetTests)
+- [x] GitHub Actions CI/CD Pipeline
+- [ ] App Store privacy labels & submission prep

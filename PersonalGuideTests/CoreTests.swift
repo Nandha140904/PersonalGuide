@@ -72,7 +72,7 @@ final class WorkflowEngineTests: XCTestCase {
         XCTAssertTrue(valid.contains(.needsInformation))
         XCTAssertTrue(valid.contains(.readyForAction))
         XCTAssertTrue(valid.contains(.inProgress))
-        XCTAssertFalse(valid.contains(.completed)) // Can't skip to completed from active
+        XCTAssertFalse(valid.contains(.completed))
     }
 }
 
@@ -92,7 +92,7 @@ final class PriorityEngineTests: XCTestCase {
             deadline: Calendar.current.date(byAdding: .day, value: -1, to: .now)
         )
         let score = engine.deadlineScore(for: pgCase)
-        XCTAssertEqual(score, 50) // Overdue = max
+        XCTAssertEqual(score, 50)
     }
 
     func testNearDeadlineScoresHigherThanFarDeadline() {
@@ -150,7 +150,6 @@ final class ReminderEngineTests: XCTestCase {
             deadline: Calendar.current.date(byAdding: .day, value: 60, to: .now)
         )
         let reminders = engine.generateReminders(for: pgCase)
-        // Should generate reminders at 30, 14, 7, 3, 1 days before
         XCTAssertEqual(reminders.count, 5)
     }
 
@@ -175,7 +174,37 @@ final class ReminderEngineTests: XCTestCase {
             deadline: Calendar.current.date(byAdding: .day, value: 5, to: .now)
         )
         let reminders = engine.generateReminders(for: pgCase)
-        // Only 3-day and 1-day reminders should be in the future
         XCTAssertEqual(reminders.count, 2)
+    }
+}
+
+final class OnDeviceAITests: XCTestCase {
+
+    var provider: OnDeviceProvider!
+
+    override func setUp() {
+        super.setUp()
+        provider = OnDeviceProvider()
+    }
+
+    func testClassifyReturnIntent() async throws {
+        let result = try await provider.classify(text: "I want to return the defective shoes I bought on Amazon")
+        XCTAssertEqual(result.caseType, .purchaseReturn)
+        XCTAssertEqual(result.documentType, .receipt)
+        XCTAssertGreaterThanOrEqual(result.confidence, 0.8)
+    }
+
+    func testClassifyInsuranceIntent() async throws {
+        let result = try await provider.classify(text: "My car insurance policy renewal is due next month with Geico")
+        XCTAssertEqual(result.caseType, .insuranceWarranty)
+        XCTAssertGreaterThanOrEqual(result.confidence, 0.8)
+    }
+
+    func testPlanCaseGeneratesOrderedActions() async throws {
+        let plan = try await provider.planCase(intent: "Return headphones bought on Amazon order #12345", extractedInfo: nil)
+        XCTAssertEqual(plan.caseType, .purchaseReturn)
+        XCTAssertFalse(plan.actions.isEmpty)
+        XCTAssertFalse(plan.requirements.isEmpty)
+        XCTAssertNotNil(plan.suggestedDeadline)
     }
 }

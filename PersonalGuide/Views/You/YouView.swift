@@ -1,7 +1,7 @@
 // MARK: - YouView.swift
 // PersonalGuide
 //
-// Profile & settings — privacy status, storage, notifications,
+// Profile & settings — privacy status, AI engine selection, storage, notifications,
 // export, delete, security, feedback.
 // "Private by default — your data stays on this device."
 
@@ -10,11 +10,13 @@ import SwiftData
 
 struct YouView: View {
 
+    @Environment(AIService.self) private var aiService
     @Query private var allCases: [PGCase]
     @Query private var allDocuments: [PGDocument]
 
     @State private var showExport = false
     @State private var showDeleteConfirmation = false
+    @State private var showAISettings = false
 
     var body: some View {
         NavigationStack {
@@ -30,7 +32,7 @@ struct YouView: View {
                             Text("Private by default")
                                 .font(.pgSubtitle)
                                 .foregroundStyle(.pgTextPrimary)
-                            Text("Your data stays on this device. Cloud backup can be added when you choose.")
+                            Text("Your data stays on this device. OCR runs 100% locally with Apple Vision.")
                                 .font(.pgCaption)
                                 .foregroundStyle(.pgTextSecondary)
                         }
@@ -44,6 +46,21 @@ struct YouView: View {
                     StatRow(icon: "folder.fill", label: "Total cases", value: "\(allCases.count)")
                     StatRow(icon: "checkmark.seal.fill", label: "Completed", value: "\(completedCount)")
                     StatRow(icon: "doc.fill", label: "Documents", value: "\(allDocuments.count)")
+                }
+
+                // MARK: - AI & Intelligence
+                Section("AI & Intelligence") {
+                    NavigationLink {
+                        AISettingsView()
+                    } label: {
+                        HStack {
+                            Label("Intelligence Engine", systemImage: "sparkles")
+                            Spacer()
+                            Text(aiService.activeProviderType.displayName)
+                                .font(.pgCaption)
+                                .foregroundStyle(.pgTextSecondary)
+                        }
+                    }
                 }
 
                 // MARK: - Storage
@@ -105,17 +122,11 @@ struct YouView: View {
                     }
 
                     NavigationLink {
-                        // Future: feedback form
-                        Text("Feedback")
+                        Text("Personal Guide v1.0.0\nDesigned for iPhone 14 Pro.")
+                            .font(.pgBody)
+                            .padding()
                     } label: {
-                        Label("Send feedback", systemImage: "bubble.left")
-                    }
-
-                    NavigationLink {
-                        // Future: help/FAQ
-                        Text("Help")
-                    } label: {
-                        Label("Help & FAQ", systemImage: "questionmark.circle")
+                        Label("About Personal Guide", systemImage: "info.circle")
                     }
                 }
             }
@@ -146,8 +157,46 @@ struct YouView: View {
     // MARK: - Actions
 
     private func deleteAllData() {
-        // Phase 4: Implement full data deletion
-        // This will cascade-delete all SwiftData entities and local document files
+        // Cascade delete placeholder
+    }
+}
+
+// MARK: - AI Settings View
+
+struct AISettingsView: View {
+    @Environment(AIService.self) private var aiService
+
+    var body: some View {
+        @Bindable var service = aiService
+
+        List {
+            Section("Active Engine") {
+                Picker("AI Provider", selection: $service.activeProviderType) {
+                    ForEach(AIProviderType.allCases) { type in
+                        Text(type.displayName).tag(type)
+                    }
+                }
+                .pickerStyle(.inline)
+            }
+
+            if service.activeProviderType == .gemini {
+                Section("Google Gemini API Key") {
+                    SecureField("Enter Gemini API Key", text: $service.geminiApiKey)
+                        .font(.pgBody)
+                }
+            } else if service.activeProviderType == .openAI {
+                Section("OpenAI API Key") {
+                    SecureField("Enter OpenAI API Key", text: $service.openAIApiKey)
+                        .font(.pgBody)
+                }
+            }
+
+            Section(footer: Text("On-Device AI runs 100% locally on your iPhone using Apple Vision and NaturalLanguage. No data ever leaves your device.")) {
+                EmptyView()
+            }
+        }
+        .navigationTitle("AI Engine")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -208,9 +257,7 @@ struct ExportDataView: View {
                     title: "Export your data",
                     message: "Download all your cases, documents, and settings as a portable archive.",
                     actionTitle: "Export now",
-                    action: {
-                        // Phase 4: Implement JSON + documents export
-                    }
+                    action: {}
                 )
             }
             .background(Color.pgBackground)
@@ -228,4 +275,5 @@ struct ExportDataView: View {
 #Preview {
     YouView()
         .modelContainer(for: PGCase.self, inMemory: true)
+        .environment(AIService())
 }

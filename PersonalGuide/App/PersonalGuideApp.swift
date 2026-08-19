@@ -2,7 +2,7 @@
 // PersonalGuide
 //
 // @main entry point. Configures SwiftData ModelContainer with all models,
-// injects shared services into the environment.
+// injects shared services (CaseService, DocumentService, AIService) into the environment.
 
 import SwiftUI
 import SwiftData
@@ -13,6 +13,8 @@ struct PersonalGuideApp: App {
     // MARK: - Services (shared across the app)
 
     @State private var caseService = CaseService()
+    @State private var documentService = DocumentService()
+    @State private var aiService = AIService()
 
     // MARK: - SwiftData Container
 
@@ -31,8 +33,6 @@ struct PersonalGuideApp: App {
         let modelConfiguration = ModelConfiguration(
             schema: schema,
             isStoredInMemoryOnly: false,
-            // CloudKit container — uncomment when ready for iCloud sync:
-            // cloudKitDatabase: .private("iCloud.com.personalguide.app")
             cloudKitDatabase: .none
         )
 
@@ -49,6 +49,8 @@ struct PersonalGuideApp: App {
         WindowGroup {
             ContentView()
                 .environment(caseService)
+                .environment(documentService)
+                .environment(aiService)
         }
         .modelContainer(sharedModelContainer)
     }

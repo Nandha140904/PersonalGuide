@@ -2,11 +2,11 @@
 // PersonalGuide
 //
 // Three paths to create a case:
-// 1. Tell Guide — natural language input
-// 2. Scan — camera/document (Phase 2)
+// 1. Tell Guide — natural language AI planning
+// 2. Scan — Apple VisionKit camera document scanning & on-device OCR
 // 3. Add manually — structured form
 //
-// After input, the system shows a preview for confirmation.
+// After input, the system shows a confidence-tagged preview for confirmation.
 
 import SwiftUI
 import SwiftData
@@ -14,12 +14,19 @@ import SwiftData
 struct CreateCaseView: View {
 
     @Environment(CaseService.self) private var caseService
+    @Environment(DocumentService.self) private var documentService
+    @Environment(AIService.self) private var aiService
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
     @State private var selectedPath: CreatePath = .tell
     @State private var showPreview = false
+    @State private var isProcessingAI = false
     @State private var draft = CaseDraft()
+
+    // Scanner state
+    @State private var showDocumentScanner = false
+    @State private var scannedDocuments: [PGDocument] = []
 
     var body: some View {
         NavigationStack {
@@ -53,10 +60,38 @@ struct CreateCaseView: View {
                         .foregroundStyle(.pgTextSecondary)
                 }
             }
+            .sheet(isPresented: $showDocumentScanner) {
+                DocumentScannerView { images in
+                    showDocumentScanner = false
+                    processScannedImages(images)
+                } onCancelled: {
+                    showDocumentScanner = false
+                }
+            }
             .sheet(isPresented: $showPreview) {
                 CasePreviewView(draft: draft) { confirmedDraft in
                     createCase(from: confirmedDraft)
                     dismiss()
+                }
+            }
+            .overlay {
+                if isProcessingAI {
+                    ZStack {
+                        Color.black.opacity(0.25)
+                            .ignoresSafeArea()
+                        VStack(spacing: PGSpacing.md) {
+                            ProgressView()
+                                .tint(.white)
+                                .scaleEffect(1.3)
+                            Text("Analyzing & planning case...")
+                                .font(.pgSubtitle)
+                                .foregroundStyle(.white)
+                        }
+                        .padding(PGSpacing.xl)
+                        .background(Color.pgPrimary)
+                        .clipShape(RoundedRectangle(cornerRadius: PGRadius.medium))
+                        .pgElevatedShadow()
+                    }
                 }
             }
         }
@@ -100,7 +135,7 @@ struct CreateCaseView: View {
                     .font(.pgTitle)
                     .foregroundStyle(.pgTextPrimary)
 
-                Text("Describe it however you like. I'll figure out the rest.")
+                Text("Describe it however you like. I'll figure out the steps, deadlines, and requirements.")
                     .font(.pgBody)
                     .foregroundStyle(.pgTextSecondary)
             }
@@ -117,7 +152,7 @@ struct CreateCaseView: View {
                 }
                 .overlay(alignment: .topLeading) {
                     if naturalLanguageInput.isEmpty {
-                        Text("e.g., I need to renew my car insurance...")
+                        Text("e.g., I need to return my headphones on Amazon before the return window closes...")
                             .font(.pgBody)
                             .foregroundStyle(.pgTextSecondary.opacity(0.5))
                             .padding(PGSpacing.md)
@@ -149,9 +184,8 @@ struct CreateCaseView: View {
 
             Spacer()
 
-            PGButton("Continue", icon: "sparkles") {
-                draft = CaseDraft.fromNaturalLanguage(naturalLanguageInput)
-                showPreview = true
+            PGButton("Plan with AI", icon: "sparkles") {
+                planWithAI(text: naturalLanguageInput)
             }
             .disabled(naturalLanguageInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .opacity(naturalLanguageInput.isEmpty ? 0.5 : 1)
@@ -161,28 +195,64 @@ struct CreateCaseView: View {
 
     private var suggestions: [String] {
         [
-            "I need to renew my car insurance",
             "Return the headphones I bought on Amazon",
-            "My passport expires next month",
-            "Cancel my Netflix subscription",
+            "Renew my car insurance policy before next week",
+            "My passport expires in 2 months",
+            "Cancel my Gym membership subscription",
         ]
     }
 
-    // MARK: - Scan (Phase 2 placeholder)
+    // MARK: - Scan
 
     private var scanContent: some View {
         VStack(spacing: PGSpacing.lg) {
-            PGEmptyState(
-                icon: "doc.viewfinder",
-                title: "Scan a document",
-                message: "Upload a receipt, bill, policy, or any document. Personal Guide will extract the details and create a case for you.",
-                actionTitle: "Choose file",
-                action: {
-                    // Phase 2: VisionKit document scanner
+            if scannedDocuments.isEmpty {
+                PGEmptyState(
+                    icon: "doc.viewfinder",
+                    title: "Scan a document",
+                    message: "Point your camera at a receipt, policy, bill, or notice. Personal Guide will extract key dates and build your action plan.",
+                    actionTitle: "Open Scanner",
+                    action: {
+                        showDocumentScanner = true
+                    }
+                )
+            } else {
+                VStack(alignment: .leading, spacing: PGSpacing.sm) {
+                    PGSectionHeader("Scanned pages (\(scannedDocuments.count))")
+
+                    ForEach(scannedDocuments) { doc in
+                        PGCard {
+                            HStack(spacing: PGSpacing.sm) {
+                                Image(systemName: "doc.text.fill")
+                                    .foregroundStyle(.pgPrimary)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(doc.fileName)
+                                        .font(.pgBody)
+                                        .foregroundStyle(.pgTextPrimary)
+                                    Text("\(doc.ocrText.count) characters recognized")
+                                        .font(.pgCaption)
+                                        .foregroundStyle(.pgTextSecondary)
+                                }
+                                Spacer()
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.pgPositive)
+                            }
+                        }
+                    }
+
+                    PGButton("Scan another page", icon: "plus", style: .secondary) {
+                        showDocumentScanner = true
+                    }
+
+                    PGButton("Generate Case Plan", icon: "sparkles") {
+                        let combinedOCR = scannedDocuments.map { $0.ocrText }.joined(separator: "\n\n")
+                        planWithAI(text: combinedOCR, attachedDocs: scannedDocuments)
+                    }
+                    .padding(.top, PGSpacing.md)
                 }
-            )
+                .padding(PGSpacing.md)
+            }
         }
-        .padding(PGSpacing.md)
     }
 
     // MARK: - Manual
@@ -286,7 +356,35 @@ struct CreateCaseView: View {
         .padding(PGSpacing.md)
     }
 
-    // MARK: - Case Creation
+    // MARK: - Actions & AI Processing
+
+    private func processScannedImages(_ images: [UIImage]) {
+        Task {
+            for (idx, image) in images.enumerated() {
+                if let doc = try? await documentService.ingestDocument(
+                    image: image,
+                    fileName: "Scan Page \(scannedDocuments.count + idx + 1)",
+                    documentType: .other,
+                    in: modelContext
+                ) {
+                    scannedDocuments.append(doc)
+                }
+            }
+        }
+    }
+
+    private func planWithAI(text: String, attachedDocs: [PGDocument] = []) {
+        isProcessingAI = true
+        Task {
+            let plannedDraft = await aiService.planCase(from: text)
+            await MainActor.run {
+                draft = plannedDraft
+                draft.scannedDocuments = attachedDocs
+                isProcessingAI = false
+                showPreview = true
+            }
+        }
+    }
 
     private func createCase(from draft: CaseDraft) {
         let pgCase = caseService.createCase(
@@ -301,7 +399,12 @@ struct CreateCaseView: View {
             in: modelContext
         )
 
-        // Auto-activate if not a draft
+        // Attach scanned documents if any
+        for doc in draft.scannedDocuments {
+            doc.parentCase = pgCase
+        }
+
+        // Auto-activate
         try? caseService.activateCase(pgCase, in: modelContext)
     }
 }
@@ -334,28 +437,50 @@ enum CreatePath: String, CaseIterable, Identifiable {
 
 // MARK: - Case Draft
 
-/// Lightweight draft model used during the creation flow before committing to SwiftData.
-struct CaseDraft {
-    var title: String = ""
-    var descriptionText: String = ""
-    var caseType: CaseType = .genericLifeAdmin
-    var source: CaseSource = .manualEntry
-    var deadline: Date?
-    var priority: CasePriority = .normal
-    var confidence: Double = 1.0
-    var actions: [CaseActionDraft] = []
-    var requirements: [CaseRequirementDraft] = []
+public struct CaseDraft {
+    public var title: String = ""
+    public var descriptionText: String = ""
+    public var caseType: CaseType = .genericLifeAdmin
+    public var documentType: DocumentType = .other
+    public var source: CaseSource = .manualEntry
+    public var deadline: Date?
+    public var priority: CasePriority = .normal
+    public var confidence: Double = 1.0
+    public var actions: [CaseActionDraft] = []
+    public var requirements: [CaseRequirementDraft] = []
+    public var scannedDocuments: [PGDocument] = []
 
-    /// Create a draft from natural language input.
-    /// In Phase 2, this will call the AI ConversationalInterpreter.
-    /// For now, it creates a basic draft from the user's text.
-    static func fromNaturalLanguage(_ text: String) -> CaseDraft {
-        // Phase 2: Replace with AI-powered interpretation
+    public init(
+        title: String = "",
+        descriptionText: String = "",
+        caseType: CaseType = .genericLifeAdmin,
+        documentType: DocumentType = .other,
+        source: CaseSource = .manualEntry,
+        deadline: Date? = nil,
+        priority: CasePriority = .normal,
+        confidence: Double = 1.0,
+        actions: [CaseActionDraft] = [],
+        requirements: [CaseRequirementDraft] = [],
+        scannedDocuments: [PGDocument] = []
+    ) {
+        self.title = title
+        self.descriptionText = descriptionText
+        self.caseType = caseType
+        self.documentType = documentType
+        self.source = source
+        self.deadline = deadline
+        self.priority = priority
+        self.confidence = confidence
+        self.actions = actions
+        self.requirements = requirements
+        self.scannedDocuments = scannedDocuments
+    }
+
+    public static func fromNaturalLanguage(_ text: String) -> CaseDraft {
         var draft = CaseDraft()
-        draft.title = text.prefix(100).trimmingCharacters(in: .whitespacesAndNewlines)
+        draft.title = text.prefix(80).trimmingCharacters(in: .whitespacesAndNewlines)
         draft.source = .naturalLanguage
 
-        // Simple keyword-based type detection (placeholder for AI classifier)
         let lower = text.lowercased()
         if lower.contains("return") || lower.contains("refund") {
             draft.caseType = .purchaseReturn
@@ -367,15 +492,13 @@ struct CaseDraft {
             draft.caseType = .subscriptionBill
         }
 
-        draft.confidence = 0.6 // Low confidence for keyword-based detection
-
+        draft.confidence = 0.6
         return draft
     }
 }
 
 // MARK: - Case Preview
 
-/// Shows the AI-generated (or keyword-detected) case preview for user confirmation.
 struct CasePreviewView: View {
     let draft: CaseDraft
     let onConfirm: (CaseDraft) -> Void
@@ -393,21 +516,26 @@ struct CasePreviewView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: PGSpacing.lg) {
-                    // Confidence disclaimer
-                    if draft.confidence < 0.8 {
-                        HStack(spacing: PGSpacing.sm) {
-                            Image(systemName: "sparkles")
-                                .foregroundStyle(.pgWarning)
-                            Text("I think this is what you need. Please review and confirm.")
+                    // Confidence indicator
+                    HStack(spacing: PGSpacing.sm) {
+                        Image(systemName: editedDraft.confidence >= 0.8 ? "checkmark.seal.fill" : "sparkles")
+                            .foregroundStyle(editedDraft.confidence >= 0.8 ? Color.pgPositive : Color.pgWarning)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(editedDraft.confidence >= 0.8 ? "High Confidence Plan" : "Review Recommended")
+                                .font(.pgSubtitle)
+                                .foregroundStyle(.pgTextPrimary)
+                            Text(String(format: "Confidence: %.0f%% — you can adjust anything before creating.", editedDraft.confidence * 100))
                                 .font(.pgCaption)
                                 .foregroundStyle(.pgTextSecondary)
                         }
-                        .padding(PGSpacing.sm)
-                        .background(Color.pgWarning.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: PGRadius.small))
                     }
+                    .padding(PGSpacing.sm)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.pgSurface)
+                    .clipShape(RoundedRectangle(cornerRadius: PGRadius.medium))
 
-                    // Preview card
+                    // Case summary card
                     PGCard {
                         VStack(alignment: .leading, spacing: PGSpacing.md) {
                             HStack {
@@ -417,26 +545,85 @@ struct CasePreviewView: View {
                                     .font(.pgSmallLabel)
                                     .foregroundStyle(.pgTextSecondary)
                                     .tracking(1)
+                                Spacer()
+                                PGStatusBadge(priority: editedDraft.priority)
                             }
 
-                            // Editable title
                             TextField("Title", text: $editedDraft.title)
                                 .font(.pgTitle)
                                 .foregroundStyle(.pgTextPrimary)
 
-                            // Type picker
-                            Picker("Type", selection: $editedDraft.caseType) {
-                                ForEach(CaseType.allCases) { type in
-                                    Text(type.displayName).tag(type)
+                            if let deadline = editedDraft.deadline {
+                                HStack {
+                                    Image(systemName: "calendar")
+                                        .foregroundStyle(.pgPrimary)
+                                    Text("Deadline: \(deadline.shortFormatted)")
+                                        .font(.pgBody)
+                                        .foregroundStyle(.pgTextPrimary)
                                 }
                             }
-                            .pickerStyle(.menu)
-                            .tint(.pgPrimary)
+                        }
+                    }
+
+                    // Steps Preview
+                    if !editedDraft.actions.isEmpty {
+                        VStack(alignment: .leading, spacing: PGSpacing.xs) {
+                            PGSectionHeader("Generated Steps (\(editedDraft.actions.count))")
+
+                            PGCard {
+                                VStack(alignment: .leading, spacing: PGSpacing.sm) {
+                                    ForEach(editedDraft.actions.indices, id: \.self) { idx in
+                                        HStack(spacing: PGSpacing.sm) {
+                                            Text("\(idx + 1)")
+                                                .font(.pgSmallLabel)
+                                                .foregroundStyle(.pgPrimary)
+                                                .frame(width: 22, height: 22)
+                                                .background(Color.pgSurface)
+                                                .clipShape(Circle())
+
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(editedDraft.actions[idx].title)
+                                                    .font(.pgBody)
+                                                    .foregroundStyle(.pgTextPrimary)
+                                                if !editedDraft.actions[idx].descriptionText.isEmpty {
+                                                    Text(editedDraft.actions[idx].descriptionText)
+                                                        .font(.pgCaption)
+                                                        .foregroundStyle(.pgTextSecondary)
+                                                }
+                                            }
+                                        }
+                                        if idx != editedDraft.actions.count - 1 {
+                                            PGDivider()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Requirements Preview
+                    if !editedDraft.requirements.isEmpty {
+                        VStack(alignment: .leading, spacing: PGSpacing.xs) {
+                            PGSectionHeader("What you will need (\(editedDraft.requirements.count))")
+
+                            PGCard {
+                                VStack(alignment: .leading, spacing: PGSpacing.sm) {
+                                    ForEach(editedDraft.requirements.indices, id: \.self) { idx in
+                                        HStack(spacing: PGSpacing.sm) {
+                                            Image(systemName: "checkmark.circle")
+                                                .foregroundStyle(.pgTextSecondary)
+                                            Text(editedDraft.requirements[idx].title)
+                                                .font(.pgBody)
+                                                .foregroundStyle(.pgTextPrimary)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
                     // Actions
-                    PGButton("Create case", icon: "checkmark") {
+                    PGButton("Confirm & Create Case", icon: "checkmark") {
                         onConfirm(editedDraft)
                         dismiss()
                     }
@@ -448,14 +635,8 @@ struct CasePreviewView: View {
                 .padding(PGSpacing.md)
             }
             .background(Color.pgBackground)
-            .navigationTitle("Review")
+            .navigationTitle("Review Plan")
             .navigationBarTitleDisplayMode(.inline)
         }
     }
-}
-
-#Preview {
-    CreateCaseView()
-        .modelContainer(for: PGCase.self, inMemory: true)
-        .environment(CaseService())
 }

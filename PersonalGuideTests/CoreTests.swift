@@ -209,17 +209,11 @@ final class OnDeviceAITests: XCTestCase {
     }
 }
 
-@MainActor
 final class SearchServiceTests: XCTestCase {
 
-    var searchService: SearchService!
-
-    override func setUp() {
-        super.setUp()
-        searchService = SearchService()
-    }
-
+    @MainActor
     func testSearchMatchesCaseTitleAndCategory() {
+        let searchService = SearchService()
         let case1 = PGCase(title: "Renew Geico Insurance Policy", caseType: .insuranceWarranty)
         case1.category = "Geico"
         let case2 = PGCase(title: "Return Amazon Order", caseType: .purchaseReturn)
@@ -235,8 +229,10 @@ final class SearchServiceTests: XCTestCase {
         XCTAssertEqual(results.cases.first?.title, "Renew Geico Insurance Policy")
     }
 
+    @MainActor
     func testSearchMatchesDocumentOCRText() {
-        let doc1 = PGDocument(fileName: "Policy.pdf", fileType: .pdf, storagePath: "docs/policy.pdf")
+        let searchService = SearchService()
+        let doc1 = PGDocument(fileName: "Policy.pdf", mimeType: "application/pdf", storagePath: "docs/policy.pdf")
         doc1.extractedText = "Policy Number POL-987654. Effective date January 2026."
 
         let results = searchService.search(
@@ -250,7 +246,9 @@ final class SearchServiceTests: XCTestCase {
         XCTAssertEqual(results.documents.first?.fileName, "Policy.pdf")
     }
 
+    @MainActor
     func testSearchMatchesAssetSerialNumber() {
+        let searchService = SearchService()
         let asset1 = Asset(name: "MacBook Pro", assetType: .laptop)
         asset1.serialNumber = "C02XYZ1234"
 
@@ -277,15 +275,15 @@ final class AssetTests: XCTestCase {
         XCTAssertTrue(asset.isUnderWarranty)
 
         let oldAsset = Asset(
-            name: "Old iPad",
-            assetType: .tablet,
+            name: "Old Laptop",
+            assetType: .laptop,
             warrantyEndDate: Calendar.current.date(byAdding: .year, value: -2, to: .now)
         )
         XCTAssertFalse(oldAsset.isUnderWarranty)
     }
 
     func testAssetMetadataJSON() {
-        let asset = Asset(name: "Tesla Model Y", assetType: .car)
+        let asset = Asset(name: "Tesla Model Y", assetType: .vehicle)
         asset.manufacturer = "Tesla"
         asset.modelNumber = "Model Y Long Range"
         asset.serialNumber = "5YJSA1E28HF123456"

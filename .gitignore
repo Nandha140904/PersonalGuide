@@ -1,7 +1,7 @@
 # Xcode
 *.xcodeproj/
 *.xcworkspace/
-xcuserdata/
+userdata/
 DerivedData/
 build/
 *.pbxuser
@@ -29,6 +29,13 @@ Package.resolved
 # Xcodegen
 *.xcodeproj
 
-# Environment
+# Environment & Local Secrets
 .env
 .env.*
+*.p12
+*.mobileprovision
+*.p8
+
+# Local Developer Guides
+GITHUB_ACTIONS_GUIDE.txt
+*.local.txt

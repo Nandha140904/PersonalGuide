@@ -219,9 +219,9 @@ final class SearchServiceTests: XCTestCase {
         searchService = SearchService()
     }
 
-    func testSearchMatchesCaseTitleAndCounterparty() {
+    func testSearchMatchesCaseTitleAndCategory() {
         let case1 = PGCase(title: "Renew Geico Insurance Policy", caseType: .insuranceWarranty)
-        case1.counterparty = "Geico"
+        case1.category = "Geico"
         let case2 = PGCase(title: "Return Amazon Order", caseType: .purchaseReturn)
 
         let results = searchService.search(

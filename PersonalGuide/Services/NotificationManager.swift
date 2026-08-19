@@ -53,7 +53,7 @@ final class NotificationManager {
         let center = UNUserNotificationCenter.current()
 
         for reminder in reminders {
-            guard reminder.status == .scheduled, reminder.scheduledAt > .now else { continue }
+            guard reminder.reminderStatus == .scheduled, reminder.triggerAt > .now else { continue }
 
             let content = UNMutableNotificationContent()
             content.title = pgCase.title
@@ -64,7 +64,7 @@ final class NotificationManager {
 
             let triggerComponents = Calendar.current.dateComponents(
                 [.year, .month, .day, .hour, .minute],
-                from: reminder.scheduledAt
+                from: reminder.triggerAt
             )
             let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: false)
 

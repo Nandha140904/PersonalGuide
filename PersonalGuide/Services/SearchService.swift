@@ -94,8 +94,8 @@ final class SearchService {
         results.cases = allCases.filter { pgCase in
             pgCase.title.lowercased().contains(trimmed) ||
             pgCase.descriptionText.lowercased().contains(trimmed) ||
-            (pgCase.counterparty?.lowercased().contains(trimmed) ?? false) ||
-            (pgCase.referenceNumber?.lowercased().contains(trimmed) ?? false) ||
+            (pgCase.category?.lowercased().contains(trimmed) ?? false) ||
+            (pgCase.externalReference?.lowercased().contains(trimmed) ?? false) ||
             pgCase.caseType.displayName.lowercased().contains(trimmed)
         }
 

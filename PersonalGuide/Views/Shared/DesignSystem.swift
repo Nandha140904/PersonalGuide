@@ -70,6 +70,22 @@ extension Color {
     }
 }
 
+// MARK: - ShapeStyle Conformance
+
+extension ShapeStyle where Self == Color {
+    static var pgPrimary: Color { .pgPrimary }
+    static var pgBackground: Color { .pgBackground }
+    static var pgCardBackground: Color { .pgCardBackground }
+    static var pgPositive: Color { .pgPositive }
+    static var pgWarning: Color { .pgWarning }
+    static var pgCritical: Color { .pgCritical }
+    static var pgTextPrimary: Color { .pgTextPrimary }
+    static var pgTextSecondary: Color { .pgTextSecondary }
+    static var pgBorder: Color { .pgBorder }
+    static var pgSurface: Color { .pgSurface }
+    static var pgAccent: Color { .pgAccent }
+}
+
 // MARK: - Hex Color Initializer
 
 extension Color {

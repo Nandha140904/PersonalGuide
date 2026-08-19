@@ -34,7 +34,7 @@ final class GeminiProvider: AIProvider, @unchecked Sendable {
         Return JSON matching this schema:
         {
           "caseType": "PURCHASE_RETURN" | "SUBSCRIPTION_BILL" | "DOCUMENT_RENEWAL" | "INSURANCE_WARRANTY" | "GENERIC_LIFE_ADMIN",
-          "documentType": "RECEIPT" | "INVOICE" | "BILL" | "POLICY" | "IDENTIFICATION" | "CONTRACT" | "OTHER",
+          "documentType": "RECEIPT" | "INVOICE" | "BILL" | "POLICY" | "CERTIFICATE" | "ID_DOCUMENT" | "WARRANTY" | "OTHER",
           "confidence": 0.0 to 1.0,
           "rationale": "short explanation"
         }
@@ -132,7 +132,7 @@ final class GeminiProvider: AIProvider, @unchecked Sendable {
             {
               "title": "Action step title",
               "description": "Details",
-              "actionType": "READ" | "UPLOAD" | "CALL" | "PAY" | "VISIT" | "DOWNLOAD" | "FORM" | "CUSTOM",
+              "actionType": "READ" | "UPLOAD" | "CALL" | "PAY" | "FILL_FORM" | "OPEN_URL" | "EMAIL" | "VERIFY" | "CONFIRM" | "WAIT" | "CUSTOM",
               "orderIndex": 0,
               "isRequired": true,
               "confidence": 0.9
@@ -142,7 +142,7 @@ final class GeminiProvider: AIProvider, @unchecked Sendable {
             {
               "title": "Requirement title (e.g. Receipt, Box, ID)",
               "description": "Why needed",
-              "requirementType": "DOCUMENT" | "CREDENTIAL" | "PHYSICAL_ITEM" | "PAYMENT" | "OTHER",
+              "requirementType": "DOCUMENT" | "PERSONAL_INFORMATION" | "PAYMENT" | "ELIGIBILITY" | "EXTERNAL_ACTION" | "APPROVAL" | "CONFIRMATION",
               "isRequired": true,
               "confidence": 0.9
             }
@@ -267,25 +267,5 @@ final class GeminiProvider: AIProvider, @unchecked Sendable {
         }
 
         return parsedJSON
-    }
-}
-
-enum AIError: LocalizedError {
-    case missingAPIKey(provider: String)
-    case networkError(String)
-    case apiError(String)
-    case parsingFailed
-
-    var errorDescription: String? {
-        switch self {
-        case .missingAPIKey(let provider):
-            return "No API key configured for \(provider)."
-        case .networkError(let message):
-            return "Network connection failed: \(message)"
-        case .apiError(let message):
-            return "AI service error: \(message)"
-        case .parsingFailed:
-            return "Failed to parse structured response from AI."
-        }
     }
 }

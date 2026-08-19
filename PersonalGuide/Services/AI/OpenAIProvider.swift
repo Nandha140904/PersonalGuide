@@ -111,8 +111,8 @@ final class OpenAIProvider: AIProvider, @unchecked Sendable {
           "priority": "LOW" | "NORMAL" | "HIGH" | "URGENT" | "CRITICAL",
           "deadlineDate": "YYYY-MM-DD" or null,
           "confidence": 0.9,
-          "actions": [{"title": "...", "description": "...", "actionType": "...", "orderIndex": 0, "isRequired": true, "confidence": 0.9}],
-          "requirements": [{"title": "...", "description": "...", "requirementType": "...", "isRequired": true, "confidence": 0.9}]
+          "actions": [{"title": "...", "description": "...", "actionType": "READ" | "UPLOAD" | "CALL" | "PAY" | "FILL_FORM" | "OPEN_URL" | "EMAIL" | "VERIFY" | "CONFIRM" | "WAIT" | "CUSTOM", "orderIndex": 0, "isRequired": true, "confidence": 0.9}],
+          "requirements": [{"title": "...", "description": "...", "requirementType": "DOCUMENT" | "PERSONAL_INFORMATION" | "PAYMENT" | "ELIGIBILITY" | "EXTERNAL_ACTION" | "APPROVAL" | "CONFIRMATION", "isRequired": true, "confidence": 0.9}]
         }
         """
 

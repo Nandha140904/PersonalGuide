@@ -36,7 +36,7 @@ final class OnDeviceProvider: AIProvider {
         } else if lower.contains("passport") || lower.contains("license") || lower.contains("expire") || lower.contains("expiry") || lower.contains("renewal") {
             return AIClassificationResult(
                 caseType: .documentRenewal,
-                documentType: .identification,
+                documentType: .idDocument,
                 confidence: 0.82,
                 rationale: "Detected identity or renewal document terms."
             )
@@ -140,12 +140,12 @@ final class OnDeviceProvider: AIProvider {
             actions = [
                 AIPlannedAction(title: "Check return eligibility window", actionType: .read, orderIndex: 0),
                 AIPlannedAction(title: "Repack item with original tags & packaging", actionType: .custom, orderIndex: 1),
-                AIPlannedAction(title: "Generate return shipping label or drop-off QR code", actionType: .download, orderIndex: 2),
-                AIPlannedAction(title: "Drop off package at courier / drop point", actionType: .visit, orderIndex: 3),
+                AIPlannedAction(title: "Generate return shipping label or drop-off QR code", actionType: .openURL, orderIndex: 2),
+                AIPlannedAction(title: "Drop off package at courier / drop point", actionType: .custom, orderIndex: 3),
                 AIPlannedAction(title: "Verify refund credited to payment account", actionType: .pay, orderIndex: 4)
             ]
             requirements = [
-                AIPlannedRequirement(title: "Original item with undamaged packaging", requirementType: .physicalItem),
+                AIPlannedRequirement(title: "Original item with undamaged packaging", requirementType: .document),
                 AIPlannedRequirement(title: "Invoice or Order confirmation", requirementType: .document)
             ]
 
@@ -161,7 +161,7 @@ final class OnDeviceProvider: AIProvider {
                 AIPlannedAction(title: "Track claim settlement reference number", actionType: .custom, orderIndex: 3)
             ]
             requirements = [
-                AIPlannedRequirement(title: "Active policy or warranty number", requirementType: .credential),
+                AIPlannedRequirement(title: "Active policy or warranty number", requirementType: .personalInformation),
                 AIPlannedRequirement(title: "Original purchase invoice", requirementType: .document)
             ]
 
@@ -173,7 +173,7 @@ final class OnDeviceProvider: AIProvider {
             actions = [
                 AIPlannedAction(title: "Verify document expiry date & renewal criteria", actionType: .read, orderIndex: 0),
                 AIPlannedAction(title: "Take new passport/identity compliant photo", actionType: .upload, orderIndex: 1),
-                AIPlannedAction(title: "Complete official online renewal application", actionType: .form, orderIndex: 2),
+                AIPlannedAction(title: "Complete official online renewal application", actionType: .fillForm, orderIndex: 2),
                 AIPlannedAction(title: "Pay renewal fee & book biometric appointment", actionType: .pay, orderIndex: 3)
             ]
             requirements = [
@@ -189,10 +189,10 @@ final class OnDeviceProvider: AIProvider {
             actions = [
                 AIPlannedAction(title: "Review charges and billing cycle", actionType: .read, orderIndex: 0),
                 AIPlannedAction(title: "Update payment method or cancel renewal", actionType: .pay, orderIndex: 1),
-                AIPlannedAction(title: "Confirm cancellation or payment receipt", actionType: .custom, orderIndex: 2)
+                AIPlannedAction(title: "Confirm cancellation or payment receipt", actionType: .confirm, orderIndex: 2)
             ]
             requirements = [
-                AIPlannedRequirement(title: "Account login / Customer ID", requirementType: .credential)
+                AIPlannedRequirement(title: "Account login / Customer ID", requirementType: .personalInformation)
             ]
 
         case .genericLifeAdmin:
@@ -200,7 +200,7 @@ final class OnDeviceProvider: AIProvider {
             actions = [
                 AIPlannedAction(title: "Review matter details and requirements", actionType: .read, orderIndex: 0),
                 AIPlannedAction(title: "Execute primary action step", actionType: .custom, orderIndex: 1),
-                AIPlannedAction(title: "Confirm resolution and archive record", actionType: .custom, orderIndex: 2)
+                AIPlannedAction(title: "Confirm resolution and archive record", actionType: .confirm, orderIndex: 2)
             ]
             requirements = [
                 AIPlannedRequirement(title: "Relevant documents / details", requirementType: .document)

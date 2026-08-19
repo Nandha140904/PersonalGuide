@@ -246,7 +246,8 @@ struct CreateCaseView: View {
 
                     PGButton("Generate Case Plan", icon: "sparkles") {
                         let combinedOCR = scannedDocuments.compactMap { $0.extractedText }.joined(separator: "\n\n")
-                        planWithAI(text: combinedOCR, attachedDocs: scannedDocuments)
+                        let docIds = scannedDocuments.map { $0.id }
+                        planWithAI(text: combinedOCR, attachedDocIds: docIds)
                     }
                     .padding(.top, PGSpacing.md)
                 }
@@ -360,7 +361,7 @@ struct CreateCaseView: View {
 
     @MainActor
     private func processScannedImages(_ images: [UIImage]) {
-        Task { @MainActor in
+        Task {
             for (idx, image) in images.enumerated() {
                 if let doc = try? await documentService.ingestDocument(
                     image: image,
@@ -375,12 +376,12 @@ struct CreateCaseView: View {
     }
 
     @MainActor
-    private func planWithAI(text: String, attachedDocs: [PGDocument] = []) {
+    private func planWithAI(text: String, attachedDocIds: [UUID] = []) {
         isProcessingAI = true
-        Task { @MainActor in
-            let plannedDraft = await aiService.planCase(from: text)
+        Task {
+            var plannedDraft = await aiService.planCase(from: text)
+            plannedDraft.scannedDocumentIds = attachedDocIds
             draft = plannedDraft
-            draft.scannedDocuments = attachedDocs
             isProcessingAI = false
             showPreview = true
         }
@@ -400,9 +401,11 @@ struct CreateCaseView: View {
             in: modelContext
         )
 
-        // Attach scanned documents if any
-        for doc in draft.scannedDocuments {
-            doc.parentCase = pgCase
+        // Attach scanned documents by ID
+        for docId in draft.scannedDocumentIds {
+            if let doc = scannedDocuments.first(where: { $0.id == docId }) {
+                doc.parentCase = pgCase
+            }
         }
 
         // Auto-activate
@@ -438,7 +441,7 @@ enum CreatePath: String, CaseIterable, Identifiable {
 
 // MARK: - Case Draft
 
-struct CaseDraft {
+struct CaseDraft: Sendable {
     var title: String = ""
     var descriptionText: String = ""
     var caseType: CaseType = .genericLifeAdmin
@@ -449,7 +452,7 @@ struct CaseDraft {
     var confidence: Double = 1.0
     var actions: [CaseActionDraft] = []
     var requirements: [CaseRequirementDraft] = []
-    var scannedDocuments: [PGDocument] = []
+    var scannedDocumentIds: [UUID] = []
 
     init(
         title: String = "",
@@ -462,7 +465,7 @@ struct CaseDraft {
         confidence: Double = 1.0,
         actions: [CaseActionDraft] = [],
         requirements: [CaseRequirementDraft] = [],
-        scannedDocuments: [PGDocument] = []
+        scannedDocumentIds: [UUID] = []
     ) {
         self.title = title
         self.descriptionText = descriptionText
@@ -474,7 +477,7 @@ struct CaseDraft {
         self.confidence = confidence
         self.actions = actions
         self.requirements = requirements
-        self.scannedDocuments = scannedDocuments
+        self.scannedDocumentIds = scannedDocumentIds
     }
 
     static func fromNaturalLanguage(_ text: String) -> CaseDraft {

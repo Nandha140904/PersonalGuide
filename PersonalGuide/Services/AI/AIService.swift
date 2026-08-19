@@ -8,8 +8,9 @@ import Foundation
 import UIKit
 import SwiftData
 
+@MainActor
 @Observable
-final class AIService: @unchecked Sendable {
+final class AIService {
 
     var activeProviderType: AIProviderType = .onDevice
     var geminiApiKey: String = ""
@@ -56,7 +57,7 @@ final class AIService: @unchecked Sendable {
     /// Full document processing pipeline: OCR -> Classify -> Extract -> Plan -> Draft.
     func processDocument(
         ocrText: String,
-        document: PGDocument?
+        documentId: UUID? = nil
     ) async -> CaseDraft {
         do {
             let classification = try await currentProvider.classify(text: ocrText)
@@ -66,20 +67,30 @@ final class AIService: @unchecked Sendable {
             var draft = makeDraft(from: plan)
             draft.source = .documentScan
             draft.documentType = classification.documentType
+            if let documentId {
+                draft.scannedDocumentIds.append(documentId)
+            }
             return draft
         } catch {
             let fallbackPlan = try? await onDeviceProvider.planCase(intent: ocrText, extractedInfo: nil)
             if let fallbackPlan {
                 var draft = makeDraft(from: fallbackPlan)
                 draft.source = .documentScan
+                if let documentId {
+                    draft.scannedDocumentIds.append(documentId)
+                }
                 return draft
             }
-            return CaseDraft(
+            var draft = CaseDraft(
                 title: "Scanned Document",
                 descriptionText: String(ocrText.prefix(200)),
                 caseType: .genericLifeAdmin,
                 source: .documentScan
             )
+            if let documentId {
+                draft.scannedDocumentIds.append(documentId)
+            }
+            return draft
         }
     }
 

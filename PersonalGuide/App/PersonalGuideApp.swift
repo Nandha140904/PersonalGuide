@@ -10,6 +10,10 @@ import SwiftData
 @main
 struct PersonalGuideApp: App {
 
+    // MARK: - First-launch onboarding
+
+    @AppStorage("PG_ONBOARDING_COMPLETE") private var isOnboardingComplete: Bool = false
+
     // MARK: - Services (shared across the app)
 
     @State private var caseService = CaseService()
@@ -50,13 +54,17 @@ struct PersonalGuideApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(caseService)
-                .environment(documentService)
-                .environment(aiService)
-                .environment(searchService)
-                .environment(notificationManager)
-                .environment(authService)
+            if isOnboardingComplete {
+                ContentView()
+                    .environment(caseService)
+                    .environment(documentService)
+                    .environment(aiService)
+                    .environment(searchService)
+                    .environment(notificationManager)
+                    .environment(authService)
+            } else {
+                OnboardingView(isOnboardingComplete: $isOnboardingComplete)
+            }
         }
         .modelContainer(sharedModelContainer)
     }

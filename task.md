@@ -71,3 +71,9 @@
 - [x] Unit tests (WorkflowEngine, PriorityEngine, ReminderEngine, OnDeviceAITests, SearchServiceTests, AssetTests, DataExportServiceTests)
 - [x] Apple Privacy Manifest (PrivacyInfo.xcprivacy with 0-tracking declaration)
 - [x] GitHub Actions CI/CD Pipeline (macOS-15 runner, automated testing & TestFlight upload)
+- [x] App icon — 1024×1024 shield + compass design in Assets.xcassets/AppIcon.appiconset
+- [x] Onboarding — 3-slide first-run experience with notification permission request (OnboardingView.swift)
+- [x] Notification permission — UNUserNotificationCenter.requestAuthorization() on last onboarding slide
+- [x] NSUserNotificationsUsageDescription added to Info.plist
+- [x] App Store Connect metadata — description, keywords, categories, screenshots guide (APP_STORE_METADATA.txt)
+- [x] TestFlight signing guide — step-by-step GitHub Secrets setup (GITHUB_ACTIONS_GUIDE.txt)

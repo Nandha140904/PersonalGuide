@@ -1,0 +1,105 @@
+# Personal Guide — App Store Connect Metadata
+# Copy-paste this into App Store Connect > My Apps > Personal Guide > App Information & Version Information
+
+# ============================================================
+# APP INFORMATION (App-level — applies to all versions)
+# ============================================================
+
+Name:
+  Personal Guide
+
+Subtitle (30 chars max):
+  Your life admin, organised
+
+Category (Primary):
+  Productivity
+
+Category (Secondary):
+  Utilities
+
+Content Rating:
+  4+ (No Objectionable Content)
+
+Privacy Policy URL:
+  https://github.com/Nandha140904/PersonalGuide/blob/main/PRIVACY.md
+
+# ============================================================
+# VERSION INFORMATION (1.0.0 — what to enter for your first build)
+# ============================================================
+
+Description (4000 chars max):
+---
+Personal Guide is your quiet, focused life-administration engine — built entirely on your iPhone with no account required, no cloud sync, and zero tracking.
+
+WHAT IT DOES
+
+Life admin is exhausting. Chasing insurance renewals, tracking returns, managing document deadlines, keeping on top of bills — it all lives in your head, in scattered emails, and half-finished notes. Personal Guide gives every open task a structured workspace with clear next steps, so nothing gets dropped.
+
+CORE FEATURES
+
+• Case Workspaces — Every life-admin task gets its own mini-workspace. See what you know, what you need, and exactly what to do next.
+• Document Scanning — Point your camera at any document: receipt, bill, policy, contract. On-device OCR extracts the key facts instantly.
+• Smart Action Plans — Personal Guide generates ordered action checklists based on the type of case (return window, renewal deadline, claim process).
+• Deadline Intelligence — The priority engine surfaces what needs attention today, this week, and coming up — so you always know what to focus on.
+• Asset Registry — Track your real-world belongings (car, phone, laptop, appliances) with warranty expiry dates and linked insurance cases.
+• Live Search — Search across all your cases, documents (including scanned text), and assets in real time.
+• Reminder Alerts — Receive actionable deadline reminders at 30, 14, 7, 3, and 1 day before key dates.
+• Face ID Protection — Add a biometric lock to keep your documents private from anyone who picks up your phone.
+• JSON Export — Export a full structured backup of your data at any time.
+• Complete Data Wipe — Remove every record with one action and full confirmation.
+
+PRIVACY FIRST
+
+Every feature runs 100% on-device. Personal Guide uses Apple Vision for OCR, Apple's NaturalLanguage framework for understanding, and SwiftData for local persistence. No account, no login, no analytics, no ads. Your data is yours.
+
+Built with Swift 6, SwiftData, and SwiftUI — the same frameworks Apple engineers use to build iOS itself.
+---
+
+Keywords (100 chars max, comma-separated):
+  life admin,productivity,organiser,documents,reminders,scanner,OCR,deadlines,insurance,receipts
+
+What's New in This Version:
+---
+First release of Personal Guide.
+
+Build your life-admin command centre — scan documents, track cases, set deadline reminders, and never drop the ball on an insurance renewal or return window again.
+---
+
+Support URL:
+  https://github.com/Nandha140904/PersonalGuide/issues
+
+Marketing URL (optional):
+  https://github.com/Nandha140904/PersonalGuide
+
+# ============================================================
+# SCREENSHOT REQUIREMENTS (you need to supply these)
+# ============================================================
+
+Required Device Sizes:
+  - iPhone 6.7" (iPhone 15 Pro Max): 1290 × 2796 px — minimum 3, maximum 10 screenshots
+  - iPhone 6.5" (iPhone 14 Plus):    1242 × 2688 px
+
+Recommended Screenshots (in order):
+  1. Home screen — "Good morning. Here's what needs your attention."
+  2. Case detail workspace — checklist steps with progress bar
+  3. Document scanner — camera capturing a receipt
+  4. Library view — search results across cases and assets
+  5. You screen — privacy badge + Face ID toggle
+
+Tools to create screenshots from a Mac + Simulator:
+  • Xcode Simulator: run the app, press Cmd+S to save a screenshot
+  • Or use Fastlane Snapshot for automated screenshot generation
+
+# ============================================================
+# REVIEW NOTES (for App Review team)
+# ============================================================
+
+Demo Account:
+  Not required. The app has no accounts or login.
+
+Special Instructions:
+  The app uses Face ID for optional biometric lock (NSFaceIDUsageDescription is set).
+  The app uses the camera for document scanning (NSCameraUsageDescription is set).
+  Both permissions can be demonstrated in the simulator with the simulator's built-in camera simulation.
+  All data is stored 100% locally; no network requests are made except by the optional cloud AI providers
+  (Google Gemini / OpenAI), which the user must manually configure with their own API key in the AI Engine settings.

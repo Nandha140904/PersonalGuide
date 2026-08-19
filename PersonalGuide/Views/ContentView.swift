@@ -2,35 +2,53 @@
 // PersonalGuide
 //
 // Root view with bottom tab navigation: Home / Library / You.
-// Matches the spec's information architecture.
+// Includes biometric lock screen presentation when enabled.
 
 import SwiftUI
 
 struct ContentView: View {
 
+    @Environment(BiometricAuthService.self) private var authService
+    @Environment(\.scenePhase) private var scenePhase
+
     @State private var selectedTab: AppTab = .home
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            HomeView()
-                .tabItem {
-                    Label(AppTab.home.title, systemImage: AppTab.home.icon)
-                }
-                .tag(AppTab.home)
+        ZStack {
+            TabView(selection: $selectedTab) {
+                HomeView()
+                    .tabItem {
+                        Label(AppTab.home.title, systemImage: AppTab.home.icon)
+                    }
+                    .tag(AppTab.home)
 
-            LibraryView()
-                .tabItem {
-                    Label(AppTab.library.title, systemImage: AppTab.library.icon)
-                }
-                .tag(AppTab.library)
+                LibraryView()
+                    .tabItem {
+                        Label(AppTab.library.title, systemImage: AppTab.library.icon)
+                    }
+                    .tag(AppTab.library)
 
-            YouView()
-                .tabItem {
-                    Label(AppTab.you.title, systemImage: AppTab.you.icon)
-                }
-                .tag(AppTab.you)
+                YouView()
+                    .tabItem {
+                        Label(AppTab.you.title, systemImage: AppTab.you.icon)
+                    }
+                    .tag(AppTab.you)
+            }
+            .tint(.pgPrimary)
+
+            // Biometric Shield Overlay
+            if authService.isBiometricLockEnabled && !authService.isUnlocked {
+                LockScreenView()
+                    .transition(.opacity)
+                    .zIndex(100)
+            }
         }
-        .tint(.pgPrimary)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                authService.lock()
+            }
+        }
+        .animation(.default, value: authService.isUnlocked)
     }
 }
 
@@ -62,4 +80,5 @@ enum AppTab: String, CaseIterable {
     ContentView()
         .modelContainer(for: PGCase.self, inMemory: true)
         .environment(CaseService())
+        .environment(BiometricAuthService.shared)
 }

@@ -294,3 +294,23 @@ final class AssetTests: XCTestCase {
         XCTAssertNotNil(asset.metadataJSON)
     }
 }
+
+final class DataExportServiceTests: XCTestCase {
+
+    @MainActor
+    func testGenerateExportJSON() throws {
+        let case1 = PGCase(title: "Renew Passport", caseType: .documentRenewal)
+        let asset1 = Asset(name: "iPhone", assetType: .phone)
+        let doc1 = PGDocument(fileName: "Passport.jpg", mimeType: "image/jpeg", storagePath: "docs/passport.jpg")
+
+        let fileURL = try DataExportService.generateExportJSON(
+            cases: [case1],
+            assets: [asset1],
+            documents: [doc1]
+        )
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: fileURL.path))
+        let data = try Data(contentsOf: fileURL)
+        XCTAssertGreaterThan(data.count, 0)
+    }
+}

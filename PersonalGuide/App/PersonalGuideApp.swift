@@ -17,6 +17,7 @@ struct PersonalGuideApp: App {
     @State private var aiService = AIService()
     @State private var searchService = SearchService()
     @State private var notificationManager = NotificationManager.shared
+    @State private var authService = BiometricAuthService.shared
 
     // MARK: - SwiftData Container
 
@@ -55,6 +56,7 @@ struct PersonalGuideApp: App {
                 .environment(aiService)
                 .environment(searchService)
                 .environment(notificationManager)
+                .environment(authService)
         }
         .modelContainer(sharedModelContainer)
     }

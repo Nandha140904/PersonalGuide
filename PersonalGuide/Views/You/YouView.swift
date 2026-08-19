@@ -1,8 +1,8 @@
 // MARK: - YouView.swift
 // PersonalGuide
 //
-// Profile & settings — privacy status, AI engine selection, storage, notifications,
-// export, delete, security, feedback.
+// Profile & settings — privacy status, AI engine selection, storage, security (Face ID),
+// export, delete, feedback.
 // "Private by default — your data stays on this device."
 
 import SwiftUI
@@ -12,12 +12,16 @@ struct YouView: View {
 
     @Environment(AIService.self) private var aiService
     @Environment(NotificationManager.self) private var notificationManager
+    @Environment(BiometricAuthService.self) private var authService
+    @Environment(\.modelContext) private var modelContext
+
     @Query private var allCases: [PGCase]
     @Query private var allDocuments: [PGDocument]
     @Query private var allAssets: [Asset]
 
     @State private var showExport = false
     @State private var showDeleteConfirmation = false
+    @State private var showDeleteSuccess = false
 
     var body: some View {
         NavigationStack {
@@ -48,6 +52,15 @@ struct YouView: View {
                     StatRow(icon: "checkmark.seal.fill", label: "Completed", value: "\(completedCount)")
                     StatRow(icon: "doc.fill", label: "Documents", value: "\(allDocuments.count)")
                     StatRow(icon: "cube.box.fill", label: "Assets", value: "\(allAssets.count)")
+                }
+
+                // MARK: - Security (Face ID / Touch ID)
+                @Bindable var auth = authService
+                Section("Security & Privacy") {
+                    Toggle(isOn: $auth.isBiometricLockEnabled) {
+                        Label("Require \(authService.biometricType.displayName)", systemImage: authService.biometricType.iconName)
+                    }
+                    .tint(.pgPrimary)
                 }
 
                 // MARK: - AI & Intelligence
@@ -108,7 +121,7 @@ struct YouView: View {
                     Button {
                         showExport = true
                     } label: {
-                        Label("Export all data", systemImage: "square.and.arrow.up")
+                        Label("Export all data (JSON)", systemImage: "square.and.arrow.up")
                     }
                     .foregroundStyle(.pgTextPrimary)
 
@@ -130,7 +143,7 @@ struct YouView: View {
                     }
 
                     NavigationLink {
-                        Text("Personal Guide v1.0.0\nDesigned for iPhone 14 Pro.")
+                        Text("Personal Guide v1.0.0\nDesigned for iPhone 14 Pro.\n100% on-device local privacy.")
                             .font(.pgBody)
                             .padding()
                     } label: {
@@ -150,8 +163,13 @@ struct YouView: View {
             } message: {
                 Text("This will permanently delete all your cases, documents, and settings. This cannot be undone.")
             }
+            .alert("Data Erased", isPresented: $showDeleteSuccess) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("All local data, cases, and documents have been securely wiped.")
+            }
             .sheet(isPresented: $showExport) {
-                ExportDataView()
+                ExportDataView(cases: allCases, assets: allAssets, documents: allDocuments)
             }
         }
     }
@@ -165,7 +183,8 @@ struct YouView: View {
     // MARK: - Actions
 
     private func deleteAllData() {
-        // Cascade delete placeholder
+        try? DataErasureService.eraseAllData(in: modelContext)
+        showDeleteSuccess = true
     }
 }
 
@@ -275,18 +294,39 @@ struct NotificationSettingsView: View {
 // MARK: - Export Data
 
 struct ExportDataView: View {
+    let cases: [PGCase]
+    let assets: [Asset]
+    let documents: [PGDocument]
+
     @Environment(\.dismiss) private var dismiss
+    @State private var exportURL: URL?
+    @State private var isExporting = false
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: PGSpacing.lg) {
+            VStack(spacing: PGSpacing.xl) {
                 PGEmptyState(
-                    icon: "square.and.arrow.up",
+                    icon: "square.and.arrow.up.fill",
                     title: "Export your data",
-                    message: "Download all your cases, documents, and settings as a portable archive.",
-                    actionTitle: "Export now",
-                    action: {}
+                    message: "Create a complete, portable JSON archive of your \(cases.count) cases, \(assets.count) assets, and \(documents.count) documents.",
+                    actionTitle: isExporting ? "Generating..." : "Generate Archive",
+                    action: {
+                        generateArchive()
+                    }
                 )
+
+                if let url = exportURL {
+                    ShareLink(item: url) {
+                        Label("Share / Save Backup", systemImage: "square.and.arrow.up")
+                            .font(.pgButton)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, PGSpacing.md)
+                            .background(Color.pgPrimary)
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: PGRadius.medium))
+                    }
+                    .padding(.horizontal, PGSpacing.xl)
+                }
             }
             .background(Color.pgBackground)
             .navigationTitle("Export")
@@ -298,6 +338,14 @@ struct ExportDataView: View {
             }
         }
     }
+
+    private func generateArchive() {
+        isExporting = true
+        if let fileURL = try? DataExportService.generateExportJSON(cases: cases, assets: assets, documents: documents) {
+            exportURL = fileURL
+        }
+        isExporting = false
+    }
 }
 
 #Preview {
@@ -305,4 +353,5 @@ struct ExportDataView: View {
         .modelContainer(for: PGCase.self, inMemory: true)
         .environment(AIService())
         .environment(NotificationManager.shared)
+        .environment(BiometricAuthService.shared)
 }

@@ -75,8 +75,8 @@ final class CaseService {
                 actionType: draft.actionType,
                 orderIndex: index,
                 isRequired: draft.isRequired,
-                externalURL: draft.externalURL,
-                source: draft.source
+                source: draft.source,
+                externalURL: draft.externalURL
             )
             action.parentCase = pgCase
             context.insert(action)

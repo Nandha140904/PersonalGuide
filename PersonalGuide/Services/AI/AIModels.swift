@@ -8,32 +8,32 @@ import Foundation
 
 // MARK: - Confidence Wrapper
 
-public struct ConfidentField<T: Sendable>: Sendable {
-    public let value: T
-    public let confidence: Double // 0.0 to 1.0
-    public let sourceText: String?
+struct ConfidentField<T: Sendable>: Sendable {
+    let value: T
+    let confidence: Double // 0.0 to 1.0
+    let sourceText: String?
 
-    public init(value: T, confidence: Double, sourceText: String? = nil) {
+    init(value: T, confidence: Double, sourceText: String? = nil) {
         self.value = value
         self.confidence = min(max(confidence, 0.0), 1.0)
         self.sourceText = sourceText
     }
 
     /// Whether this field is considered high confidence (>= 0.8) and can be auto-accepted.
-    public var isHighConfidence: Bool {
+    var isHighConfidence: Bool {
         confidence >= 0.80
     }
 }
 
 // MARK: - Classification Result
 
-public struct AIClassificationResult: Sendable {
-    public let caseType: CaseType
-    public let documentType: DocumentType
-    public let confidence: Double
-    public let rationale: String
+struct AIClassificationResult: Sendable {
+    let caseType: CaseType
+    let documentType: DocumentType
+    let confidence: Double
+    let rationale: String
 
-    public init(caseType: CaseType, documentType: DocumentType, confidence: Double, rationale: String) {
+    init(caseType: CaseType, documentType: DocumentType, confidence: Double, rationale: String) {
         self.caseType = caseType
         self.documentType = documentType
         self.confidence = confidence
@@ -43,17 +43,17 @@ public struct AIClassificationResult: Sendable {
 
 // MARK: - Document Extraction Result
 
-public struct AIExtractionResult: Sendable {
-    public var counterparty: ConfidentField<String>?       // Merchant, Insurer, Landlord, Gov Agency
-    public var referenceNumber: ConfidentField<String>?     // Policy #, Order ID, Invoice #, Account #
-    public var monetaryAmount: ConfidentField<Decimal>?     // Total due, refund amount, policy value
-    public var currencyCode: String                         // USD, EUR, INR, GBP
-    public var keyDates: [String: ConfidentField<Date>]     // "deadline", "renewal", "expiry", "issue"
-    public var structuredMetadata: [String: String]        // Any custom key-values discovered
-    public var summary: String
-    public var confidence: Double
+struct AIExtractionResult: Sendable {
+    var counterparty: ConfidentField<String>?       // Merchant, Insurer, Landlord, Gov Agency
+    var referenceNumber: ConfidentField<String>?     // Policy #, Order ID, Invoice #, Account #
+    var monetaryAmount: ConfidentField<Decimal>?     // Total due, refund amount, policy value
+    var currencyCode: String                         // USD, EUR, INR, GBP
+    var keyDates: [String: ConfidentField<Date>]     // "deadline", "renewal", "expiry", "issue"
+    var structuredMetadata: [String: String]        // Any custom key-values discovered
+    var summary: String
+    var confidence: Double
 
-    public init(
+    init(
         counterparty: ConfidentField<String>? = nil,
         referenceNumber: ConfidentField<String>? = nil,
         monetaryAmount: ConfidentField<Decimal>? = nil,
@@ -76,18 +76,18 @@ public struct AIExtractionResult: Sendable {
 
 // MARK: - Planned Actions & Requirements
 
-public struct AIPlannedAction: Sendable, Identifiable {
-    public var id = UUID()
-    public let title: String
-    public let descriptionText: String
-    public let actionType: ActionType
-    public let orderIndex: Int
-    public let isRequired: Bool
-    public let deadline: Date?
-    public let externalURL: String?
-    public let confidence: Double
+struct AIPlannedAction: Sendable, Identifiable {
+    var id = UUID()
+    let title: String
+    let descriptionText: String
+    let actionType: ActionType
+    let orderIndex: Int
+    let isRequired: Bool
+    let deadline: Date?
+    let externalURL: String?
+    let confidence: Double
 
-    public init(
+    init(
         title: String,
         descriptionText: String = "",
         actionType: ActionType = .custom,
@@ -108,15 +108,15 @@ public struct AIPlannedAction: Sendable, Identifiable {
     }
 }
 
-public struct AIPlannedRequirement: Sendable, Identifiable {
-    public var id = UUID()
-    public let title: String
-    public let descriptionText: String
-    public let requirementType: RequirementType
-    public let isRequired: Bool
-    public let confidence: Double
+struct AIPlannedRequirement: Sendable, Identifiable {
+    var id = UUID()
+    let title: String
+    let descriptionText: String
+    let requirementType: RequirementType
+    let isRequired: Bool
+    let confidence: Double
 
-    public init(
+    init(
         title: String,
         descriptionText: String = "",
         requirementType: RequirementType = .document,
@@ -133,18 +133,18 @@ public struct AIPlannedRequirement: Sendable, Identifiable {
 
 // MARK: - Case Plan Result
 
-public struct AICasePlan: Sendable {
-    public let title: String
-    public let descriptionText: String
-    public let caseType: CaseType
-    public let suggestedPriority: CasePriority
-    public let suggestedDeadline: Date?
-    public let actions: [AIPlannedAction]
-    public let requirements: [AIPlannedRequirement]
-    public let extractedFields: AIExtractionResult
-    public let confidence: Double
+struct AICasePlan: Sendable {
+    let title: String
+    let descriptionText: String
+    let caseType: CaseType
+    let suggestedPriority: CasePriority
+    let suggestedDeadline: Date?
+    let actions: [AIPlannedAction]
+    let requirements: [AIPlannedRequirement]
+    let extractedFields: AIExtractionResult
+    let confidence: Double
 
-    public init(
+    init(
         title: String,
         descriptionText: String,
         caseType: CaseType,

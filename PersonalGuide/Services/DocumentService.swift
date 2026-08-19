@@ -10,12 +10,12 @@ import SwiftData
 import CryptoKit
 
 @Observable
-public final class DocumentService: @unchecked Sendable {
+final class DocumentService: @unchecked Sendable {
 
     private let fileManager = FileManager.default
     private let ocrService = VisionOCRService.shared
 
-    public init() {
+    init() {
         createStorageDirectoriesIfNeeded()
     }
 
@@ -39,7 +39,7 @@ public final class DocumentService: @unchecked Sendable {
     // MARK: - Document Ingestion & Storage
 
     /// Save an image document, compute its hash, generate a thumbnail, and run OCR.
-    public func ingestDocument(
+    func ingestDocument(
         image: UIImage,
         fileName: String,
         documentType: DocumentType = .other,
@@ -113,13 +113,13 @@ public final class DocumentService: @unchecked Sendable {
     // MARK: - Document Retrieval & Deletion
 
     /// Load document image data from local sandbox.
-    public func loadDocumentData(for document: PGDocument) -> Data? {
+    func loadDocumentData(for document: PGDocument) -> Data? {
         guard let localPath = document.localPath else { return nil }
         return try? Data(contentsOf: URL(fileURLWithPath: localPath))
     }
 
     /// Delete a document record and its corresponding files on disk.
-    public func deleteDocument(_ document: PGDocument, in context: ModelContext) {
+    func deleteDocument(_ document: PGDocument, in context: ModelContext) {
         if let localPath = document.localPath {
             try? fileManager.removeItem(atPath: localPath)
         }
@@ -131,12 +131,12 @@ public final class DocumentService: @unchecked Sendable {
     }
 }
 
-public enum DocumentError: LocalizedError {
+enum DocumentError: LocalizedError {
     case imageConversionFailed
     case fileNotFound
     case writeFailed
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .imageConversionFailed:
             return "Could not convert the image to standard document format."

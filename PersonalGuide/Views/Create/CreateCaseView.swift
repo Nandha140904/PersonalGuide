@@ -437,20 +437,20 @@ enum CreatePath: String, CaseIterable, Identifiable {
 
 // MARK: - Case Draft
 
-public struct CaseDraft {
-    public var title: String = ""
-    public var descriptionText: String = ""
-    public var caseType: CaseType = .genericLifeAdmin
-    public var documentType: DocumentType = .other
-    public var source: CaseSource = .manualEntry
-    public var deadline: Date?
-    public var priority: CasePriority = .normal
-    public var confidence: Double = 1.0
-    public var actions: [CaseActionDraft] = []
-    public var requirements: [CaseRequirementDraft] = []
-    public var scannedDocuments: [PGDocument] = []
+struct CaseDraft {
+    var title: String = ""
+    var descriptionText: String = ""
+    var caseType: CaseType = .genericLifeAdmin
+    var documentType: DocumentType = .other
+    var source: CaseSource = .manualEntry
+    var deadline: Date?
+    var priority: CasePriority = .normal
+    var confidence: Double = 1.0
+    var actions: [CaseActionDraft] = []
+    var requirements: [CaseRequirementDraft] = []
+    var scannedDocuments: [PGDocument] = []
 
-    public init(
+    init(
         title: String = "",
         descriptionText: String = "",
         caseType: CaseType = .genericLifeAdmin,
@@ -476,7 +476,7 @@ public struct CaseDraft {
         self.scannedDocuments = scannedDocuments
     }
 
-    public static func fromNaturalLanguage(_ text: String) -> CaseDraft {
+    static func fromNaturalLanguage(_ text: String) -> CaseDraft {
         var draft = CaseDraft()
         draft.title = text.prefix(80).trimmingCharacters(in: .whitespacesAndNewlines)
         draft.source = .naturalLanguage

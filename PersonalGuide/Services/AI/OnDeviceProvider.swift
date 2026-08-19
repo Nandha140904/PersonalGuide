@@ -7,16 +7,16 @@
 import Foundation
 import NaturalLanguage
 
-public final class OnDeviceProvider: AIProvider {
+final class OnDeviceProvider: AIProvider {
 
-    public let providerName = "On-Device (Apple NL)"
-    public var isConfigured: Bool { true }
+    let providerName = "On-Device (Apple NL)"
+    var isConfigured: Bool { true }
 
-    public init() {}
+    init() {}
 
     // MARK: - Classification
 
-    public func classify(text: String) async throws -> AIClassificationResult {
+    func classify(text: String) async throws -> AIClassificationResult {
         let lower = text.lowercased()
 
         if lower.contains("return") || lower.contains("refund") || lower.contains("delivered") || lower.contains("order #") || lower.contains("shipped") {
@@ -59,7 +59,7 @@ public final class OnDeviceProvider: AIProvider {
 
     // MARK: - Extraction
 
-    public func extract(text: String, expectedType: DocumentType?) async throws -> AIExtractionResult {
+    func extract(text: String, expectedType: DocumentType?) async throws -> AIExtractionResult {
         var result = AIExtractionResult()
 
         // 1. Counterparty extraction using Apple NLTagger (Organization entity)
@@ -122,7 +122,7 @@ public final class OnDeviceProvider: AIProvider {
 
     // MARK: - Case Planning
 
-    public func planCase(intent: String, extractedInfo: AIExtractionResult?) async throws -> AICasePlan {
+    func planCase(intent: String, extractedInfo: AIExtractionResult?) async throws -> AICasePlan {
         let classification = try await classify(text: intent)
         let extracted = try await extract(text: intent, expectedType: classification.documentType)
 

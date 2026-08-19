@@ -9,21 +9,21 @@ import UIKit
 import SwiftData
 
 @Observable
-public final class AIService: @unchecked Sendable {
+final class AIService: @unchecked Sendable {
 
-    public var activeProviderType: AIProviderType = .onDevice
-    public var geminiApiKey: String = ""
-    public var openAIApiKey: String = ""
+    var activeProviderType: AIProviderType = .onDevice
+    var geminiApiKey: String = ""
+    var openAIApiKey: String = ""
 
     private let onDeviceProvider = OnDeviceProvider()
     private var geminiProvider: GeminiProvider { GeminiProvider(apiKey: geminiApiKey) }
     private var openAIProvider: OpenAIProvider { OpenAIProvider(apiKey: openAIApiKey) }
 
-    public init() {}
+    init() {}
 
     // MARK: - Active Provider Resolution
 
-    public var currentProvider: any AIProvider {
+    var currentProvider: any AIProvider {
         switch activeProviderType {
         case .gemini:
             return geminiProvider.isConfigured ? geminiProvider : onDeviceProvider
@@ -37,7 +37,7 @@ public final class AIService: @unchecked Sendable {
     // MARK: - Plan Case from Natural Language
 
     /// Plan a case from user's conversational description with automatic offline fallback.
-    public func planCase(from naturalLanguage: String) async -> CaseDraft {
+    func planCase(from naturalLanguage: String) async -> CaseDraft {
         do {
             let plan = try await currentProvider.planCase(intent: naturalLanguage, extractedInfo: nil)
             return makeDraft(from: plan)
@@ -54,7 +54,7 @@ public final class AIService: @unchecked Sendable {
     // MARK: - Process Scanned Document Pipeline
 
     /// Full document processing pipeline: OCR -> Classify -> Extract -> Plan -> Draft.
-    public func processDocument(
+    func processDocument(
         ocrText: String,
         document: PGDocument?
     ) async -> CaseDraft {

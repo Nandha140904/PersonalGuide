@@ -5,24 +5,24 @@
 
 import Foundation
 
-public final class OpenAIProvider: AIProvider, @unchecked Sendable {
+final class OpenAIProvider: AIProvider, @unchecked Sendable {
 
-    public let providerName = "OpenAI"
+    let providerName = "OpenAI"
     private let apiKey: String
     private let session: URLSession
 
-    public var isConfigured: Bool {
+    var isConfigured: Bool {
         !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    public init(apiKey: String = "", session: URLSession = .shared) {
+    init(apiKey: String = "", session: URLSession = .shared) {
         self.apiKey = apiKey
         self.session = session
     }
 
     // MARK: - Classification
 
-    public func classify(text: String) async throws -> AIClassificationResult {
+    func classify(text: String) async throws -> AIClassificationResult {
         let prompt = """
         Classify this life administration text into one of: PURCHASE_RETURN, SUBSCRIPTION_BILL, DOCUMENT_RENEWAL, INSURANCE_WARRANTY, GENERIC_LIFE_ADMIN.
         Return JSON matching: {"caseType": "...", "documentType": "...", "confidence": 0.9, "rationale": "..."}
@@ -45,7 +45,7 @@ public final class OpenAIProvider: AIProvider, @unchecked Sendable {
 
     // MARK: - Extraction
 
-    public func extract(text: String, expectedType: DocumentType?) async throws -> AIExtractionResult {
+    func extract(text: String, expectedType: DocumentType?) async throws -> AIExtractionResult {
         let prompt = """
         Extract all factual life-administration entities from the text with confidence (0.0 to 1.0).
         Return JSON matching:
@@ -99,7 +99,7 @@ public final class OpenAIProvider: AIProvider, @unchecked Sendable {
 
     // MARK: - Case Planning
 
-    public func planCase(intent: String, extractedInfo: AIExtractionResult?) async throws -> AICasePlan {
+    func planCase(intent: String, extractedInfo: AIExtractionResult?) async throws -> AICasePlan {
         let prompt = """
         You are Personal Guide, an expert life-administration engine. Turn this intent into a structured case plan with actions and requirements.
         Intent: "\(intent)"

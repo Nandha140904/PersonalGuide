@@ -8,39 +8,39 @@ import Foundation
 import Vision
 import UIKit
 
-public struct OCRResult: Sendable {
-    public let fullText: String
-    public let recognizedLines: [OCRLine]
-    public let confidence: Double
+struct OCRResult: Sendable {
+    let fullText: String
+    let recognizedLines: [OCRLine]
+    let confidence: Double
 
-    public init(fullText: String, recognizedLines: [OCRLine], confidence: Double) {
+    init(fullText: String, recognizedLines: [OCRLine], confidence: Double) {
         self.fullText = fullText
         self.recognizedLines = recognizedLines
         self.confidence = confidence
     }
 }
 
-public struct OCRLine: Sendable, Identifiable {
-    public var id = UUID()
-    public let text: String
-    public let confidence: Float
-    public let boundingBox: CGRect
+struct OCRLine: Sendable, Identifiable {
+    var id = UUID()
+    let text: String
+    let confidence: Float
+    let boundingBox: CGRect
 
-    public init(text: String, confidence: Float, boundingBox: CGRect) {
+    init(text: String, confidence: Float, boundingBox: CGRect) {
         self.text = text
         self.confidence = confidence
         self.boundingBox = boundingBox
     }
 }
 
-public actor VisionOCRService {
+actor VisionOCRService {
 
-    public static let shared = VisionOCRService()
+    static let shared = VisionOCRService()
 
-    public init() {}
+    init() {}
 
     /// Recognize text from a UIImage using Apple Vision framework on-device.
-    public func recognizeText(from image: UIImage) async throws -> OCRResult {
+    func recognizeText(from image: UIImage) async throws -> OCRResult {
         guard let cgImage = image.cgImage else {
             throw OCRError.invalidImage
         }
@@ -99,11 +99,11 @@ public actor VisionOCRService {
     }
 }
 
-public enum OCRError: LocalizedError {
+enum OCRError: LocalizedError {
     case invalidImage
     case processingFailed
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .invalidImage:
             return "The provided image data is invalid or could not be processed."

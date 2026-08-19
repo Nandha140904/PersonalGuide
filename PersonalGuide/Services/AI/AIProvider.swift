@@ -6,7 +6,7 @@
 
 import Foundation
 
-public protocol AIProvider: Sendable {
+protocol AIProvider: Sendable {
     var providerName: String { get }
     var isConfigured: Bool { get }
 
@@ -20,14 +20,14 @@ public protocol AIProvider: Sendable {
     func planCase(intent: String, extractedInfo: AIExtractionResult?) async throws -> AICasePlan
 }
 
-public enum AIProviderType: String, CaseIterable, Identifiable, Sendable {
+enum AIProviderType: String, CaseIterable, Identifiable, Sendable {
     case onDevice = "on_device"
     case gemini = "gemini"
     case openAI = "openai"
 
-    public var id: String { rawValue }
+    var id: String { rawValue }
 
-    public var displayName: String {
+    var displayName: String {
         switch self {
         case .onDevice: return "On-Device (Apple Vision & NL)"
         case .gemini:   return "Google Gemini"
@@ -35,7 +35,7 @@ public enum AIProviderType: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
-    public var isCloud: Bool {
+    var isCloud: Bool {
         self != .onDevice
     }
 }

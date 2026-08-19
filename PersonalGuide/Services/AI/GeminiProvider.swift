@@ -5,24 +5,24 @@
 
 import Foundation
 
-public final class GeminiProvider: AIProvider, @unchecked Sendable {
+final class GeminiProvider: AIProvider, @unchecked Sendable {
 
-    public let providerName = "Google Gemini"
+    let providerName = "Google Gemini"
     private let apiKey: String
     private let session: URLSession
 
-    public var isConfigured: Bool {
+    var isConfigured: Bool {
         !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    public init(apiKey: String = "", session: URLSession = .shared) {
+    init(apiKey: String = "", session: URLSession = .shared) {
         self.apiKey = apiKey
         self.session = session
     }
 
     // MARK: - Classification
 
-    public func classify(text: String) async throws -> AIClassificationResult {
+    func classify(text: String) async throws -> AIClassificationResult {
         let prompt = """
         Analyze this life administration text and classify it into one of these case types:
         - PURCHASE_RETURN (returns, refunds, defective items, deliveries)
@@ -58,7 +58,7 @@ public final class GeminiProvider: AIProvider, @unchecked Sendable {
 
     // MARK: - Extraction
 
-    public func extract(text: String, expectedType: DocumentType?) async throws -> AIExtractionResult {
+    func extract(text: String, expectedType: DocumentType?) async throws -> AIExtractionResult {
         let prompt = """
         Extract all factual life-administration entities from the following text with confidence ratings (0.0 to 1.0).
 
@@ -114,7 +114,7 @@ public final class GeminiProvider: AIProvider, @unchecked Sendable {
 
     // MARK: - Case Planning
 
-    public func planCase(intent: String, extractedInfo: AIExtractionResult?) async throws -> AICasePlan {
+    func planCase(intent: String, extractedInfo: AIExtractionResult?) async throws -> AICasePlan {
         let prompt = """
         You are Personal Guide, an expert life-administration engine. Turn the user's intent into a structured case plan with concrete, ordered steps and physical/documentary requirements.
 
@@ -270,13 +270,13 @@ public final class GeminiProvider: AIProvider, @unchecked Sendable {
     }
 }
 
-public enum AIError: LocalizedError {
+enum AIError: LocalizedError {
     case missingAPIKey(provider: String)
     case networkError(String)
     case apiError(String)
     case parsingFailed
 
-    public var errorDescription: String? {
+    var errorDescription: String? {
         switch self {
         case .missingAPIKey(let provider):
             return "No API key configured for \(provider)."

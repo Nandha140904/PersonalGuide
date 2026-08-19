@@ -10,8 +10,8 @@ env:
 
 jobs:
   build-and-test:
-    name: Build & Run Unit Tests
-    runs-on: macos-15  # macOS Sequoia
+    name: Build & Verify iOS App & Tests
+    runs-on: macos-15  # macOS Sequoia with Xcode 16
 
     steps:
       # ── Checkout ──────────────────────────────────────
@@ -23,7 +23,6 @@ jobs:
         run: |
           xcodebuild -version
           xcodebuild -showsdks
-          xcrun simctl list runtimes
 
       # ── Generate Xcode Project ────────────────────────
       - name: Install XcodeGen
@@ -34,10 +33,10 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ""
 
-      # ── Build for iOS Device (ARM64) ──────────────────
-      - name: Build iOS App
+      # ── Build iOS App & Test Suites (ARM64) ───────────
+      - name: Build iOS App & Unit Tests
         run: |
-          xcodebuild build \
+          xcodebuild build-for-testing \
             -project PersonalGuide.xcodeproj \
             -scheme $SCHEME \
             -destination 'generic/platform=iOS' \
